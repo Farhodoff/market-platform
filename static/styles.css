@@ -1,0 +1,128 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f9fafb;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Asosiy konteyner */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 90px);
+}
+
+/* Kategoriyalar grid */
+.categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+}
+.category-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 12px;
+    padding: 20px;
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    height: 120px;
+    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.category-card:hover { transform: translateY(-4px); }
+
+/* Rang variantlari */
+.green { background: #34d399; }
+.blue { background: #3b82f6; }
+.pink { background: #ec4899; }
+.orange { background: #f97316; }
+.red { background: #ef4444; }
+.purple { background: #a855f7; }
+.brown { background: #92400e; }
+.teal { background: #14b8a6; }
+.yellow { background: #facc15; }
+.darkgreen { background: #166534; }
+.gray { background: #6b7280; }
+.default { background: #9ca3af; }
+
+/* 🔥 Promo (Aksiya mahsulotlari) maxsus dizayn */
+.category-card.promo {
+    background: linear-gradient(135deg, #ef4444, #f97316, #f59e0b);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+    animation: glow 2.5s infinite alternate;
+}
+
+/* Yonuvchi effekt */
+@keyframes glow {
+    0% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.7), 0 0 12px rgba(249, 115, 22, 0.6); }
+    50% { box-shadow: 0 0 20px rgba(239, 68, 68, 1), 0 0 30px rgba(249, 115, 22, 0.9); }
+    100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.7), 0 0 12px rgba(249, 115, 22, 0.6); }
+}
+
+/* Markazdagi fire emoji */
+.category-card.promo::before {
+    content: "🔥";
+    font-size: 28px;
+    display: block;
+    margin-bottom: 6px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Pulsatsiya effekt */
+@keyframes pulse {
+    0% { text-shadow: 0 0 5px #fff, 0 0 10px #ff4500; }
+    50% { text-shadow: 0 0 15px #fff, 0 0 25px #ff6347; }
+    100% { text-shadow: 0 0 5px #fff, 0 0 10px #ff4500; }
+}
+
+/* Mobil moslashuv */
+@media (max-width: 768px) {
+    .categories { grid-template-columns: repeat(2, 1fr); }
+    .category-card {
+        font-size: 14px;
+        padding: 16px;
+        height: 110px;
+    }
+}
+@media (max-width: 480px) {
+    .categories { grid-template-columns: 1fr; }
+    .category-card {
+        font-size: 13px;
+        padding: 14px;
+        height: 100px;
+    }
+}
+
+/* Floating back button (iOS style) */
+.back-btn {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    padding: 10px 22px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+.back-btn:hover {
+    background: rgba(0,0,0,0.75);
+}

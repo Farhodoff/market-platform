@@ -1,0 +1,21 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="ignoredPackages">
+        <list>
+          <option value="aiogram" />
+          <option value="Flask" />
+          <option value="python-dotenv" />
+          <option value="Jinja2" />
+          <option value="itsdangerous" />
+          <option value="Werkzeug" />
+          <option value="aiohttp" />
+          <option value="aiosignal" />
+          <option value="pydantic" />
+          <option value="pydantic-core" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

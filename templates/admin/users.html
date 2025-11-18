@@ -1,0 +1,53 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ _("Foydalanuvchilar") }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-3">👤 {{ _("Foydalanuvchilar Ro‘yxati") }}</h5>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>{{ _("Ism") }}</th>
+            <th>{{ _("Telefon") }}</th>
+            <th>{{ _("Manzil") }}</th>
+            <th class="text-end">{{ _("Amallar") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+          <tr>
+            <td>#{{ user['id'] }}</td>
+            <td>{{ user['name'] }}</td>
+            <td>{{ user['phone'] or '—' }}</td>
+            <td>
+              {% if user['lat'] and user['lon'] %}
+                <a href="https://www.google.com/maps/search/?api=1&query={{ user['lat'] }},{{ user['lon'] }}"
+                   target="_blank" class="text-primary">🗺 Google</a>
+                &nbsp;|&nbsp;
+                <a href="https://yandex.com/maps/?ll={{ user['lon']|urlencode }},{{ user['lat']|urlencode }}&z=16"
+                   target="_blank" class="text-danger">📍 Yandex</a>
+              {% else %}
+                {{ user['address'] or '—' }}
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin_delete_user', user_id=user['id']) }}"
+                 onclick="return confirm('❌ {{ _("Rostdan ham foydalanuvchini o‘chirmoqchimisiz?") }}')"
+                 class="btn btn-sm btn-outline-danger">🗑 {{ _("O‘chirish") }}</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">🚀 {{ _("Hali foydalanuvchi mavjud emas") }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

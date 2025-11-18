@@ -1,0 +1,84 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ _("Buyurtmalarni Boshqarish") }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-3">📋 {{ _("Buyurtmalar Ro‘yxati") }}</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>{{ _("Mijoz ismi") }}</th>
+            <th>{{ _("Telefon") }}</th>
+            <th>{{ _("Manzil") }}</th>
+            <th>{{ _("Mahsulotlar") }}</th>
+            <th>{{ _("Jami summa") }}</th>
+            <th>{{ _("Chek") }}</th>
+            <th>{{ _("Status") }}</th>
+            <th>{{ _("Sana") }}</th>
+            <th class="text-end">{{ _("Amallar") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>#{{ loop.index }}</td>
+            <td>{{ o['name'] }}</td>
+            <td>{{ o['phone'] }}</td>
+            <td>
+              {% if o['lat'] and o['lon'] %}
+                <a href="https://www.google.com/maps?q={{ o['lat'] }},{{ o['lon'] }}"
+                   target="_blank" class="text-primary">🗺 {{ _("Google Maps") }}</a>
+              {% else %}
+                {{ o['address'] }}
+              {% endif %}
+            </td>
+
+            <!-- 🛒 Mahsulotlar -->
+            <td>
+              <ul class="list-unstyled mb-0">
+                {% for item in o['items'] %}
+                  <li>📦 {{ item['product_name'] }} × {{ item['quantity'] }} ({{ item['price'] }} so‘m)</li>
+                {% endfor %}
+              </ul>
+            </td>
+
+            <td><b>{{ "{:,}".format(o['total_price']|int).replace(",", " ") }} {{ _("so‘m") }}</b></td>
+            <td>
+              {% if o['receipt'] %}
+                <a href="{{ url_for('admin_receipt', filename=o['receipt']) }}" target="_blank"
+                   class="btn btn-sm btn-outline-secondary">📎 {{ _("Ko‘rish") }}</a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if o['status'] == 'Kutilmoqda' %}
+                <span class="badge bg-warning text-dark">{{ _("Kutilmoqda") }}</span>
+              {% elif o['status'] == 'Tasdiqlandi' %}
+                <span class="badge bg-primary">{{ _("Tasdiqlandi") }}</span>
+              {% elif o['status'] == 'Bajarildi' %}
+                <span class="badge bg-success">{{ _("Bajarildi") }}</span>
+              {% endif %}
+            </td>
+            <td>{{ o['created_at'] }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Tasdiqlandi') }}"
+                 class="btn btn-sm btn-outline-primary">✅ {{ _("Tasdiqlash") }}</a>
+              <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bajarildi') }}"
+                 class="btn btn-sm btn-outline-success">🚚 {{ _("Bajarildi") }}</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="10" class="text-center text-muted">🚀 {{ _("Hali buyurtma yo‘q") }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

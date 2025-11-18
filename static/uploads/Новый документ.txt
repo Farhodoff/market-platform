@@ -1,0 +1,35 @@
+﻿Data Structures (Ma’lumot tuzilmalar)
+
+
+1. Array (massiv)
+
+2. String (matn)
+
+3. Linked List
+
+4. Stack
+
+5. Queue
+
+6. Hashing (Hash Table, Set, Map)
+
+7. Tree (Binary Tree, BST, Heap)
+
+8. Graph
+
+ Algorithms (Algoritmlar)
+
+
+Algorithm – bu ma’lum bir muammoni hal qilish uchun yozilgan qadamlar ketma-ketligi.
+Asosiy turlari:
+   * Sorting (Saralash) → Bubble Sort, Merge Sort, Quick Sort
+
+   * Searching (Qidirish) → Linear Search, Binary Search
+
+   * Greedy algoritmlar
+
+   * Divide & Conquer
+
+   * Dynamic Programming (DP)
+
+   * Graph algoritmlari → BFS, DFS, Dijkstra, Floyd-Warshall

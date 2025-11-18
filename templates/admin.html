@@ -1,0 +1,120 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}⚙️ {{ _("Admin Panel") }}{% endblock %}
+
+{% block content %}
+
+<!-- 📦 Kategoriyalar -->
+<div class="card">
+    <h2>➕ {{ _("Yangi Kategoriya") }}</h2>
+    <form action="{{ url_for('admin_add_category') }}" method="post" class="form-inline">
+        <input type="text" name="name" placeholder="{{ _('Kategoriya nomi') }}" required>
+        <button type="submit" class="btn-success">{{ _("Qo‘shish") }}</button>
+    </form>
+
+    <h3>📂 {{ _("Mavjud kategoriyalar") }}</h3>
+    <ul>
+        {% for cat in categories %}
+            <li>{{ cat['id'] }}. {{ cat['name'] }}</li>
+        {% else %}
+            <li style="color:gray;">❌ {{ _("Hali kategoriya qo‘shilmagan") }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- 🛍 Mahsulotlar -->
+<div class="card">
+    <h2>➕ {{ _("Yangi Mahsulot") }}</h2>
+    <form action="{{ url_for('admin_add_product') }}" method="post" enctype="multipart/form-data" class="form-grid">
+        <input type="text" name="name" placeholder="{{ _('Mahsulot nomi') }}" required>
+        <input type="number" name="price" placeholder="{{ _('Narxi') }}" required>
+        <select name="category_id" required>
+            <option value="">{{ _("-- Kategoriya tanlang --") }}</option>
+            {% for cat in categories %}
+                <option value="{{ cat['id'] }}">{{ cat['name'] }}</option>
+            {% endfor %}
+        </select>
+        <input type="file" name="image" accept="image/*">
+        <button type="submit" class="btn-success">{{ _("Mahsulot qo‘shish") }}</button>
+    </form>
+
+    <h3>🛍 {{ _("Mahsulotlar ro‘yxati") }}</h3>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>{{ _("Rasm") }}</th>
+                    <th>{{ _("Nomi") }}</th>
+                    <th>{{ _("Narxi") }}</th>
+                    <th>{{ _("Kategoriya") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>{{ p['id'] }}</td>
+                    <td>
+                        {% if p['image'] %}
+                            <img src="{{ p['image'] }}" alt="rasm" width="50">
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </td>
+                    <td>{{ p['name'] }}</td>
+                    <td>{{ p['price'] }} {{ _("so‘m") }}</td>
+                    <td>{{ p['category_id'] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:gray;">❌ {{ _("Mahsulotlar yo‘q") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 📋 Buyurtmalar -->
+<div class="card">
+    <h2>📋 {{ _("Buyurtmalar") }}</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>{{ _("Mijoz") }}</th>
+                    <th>{{ _("Telefon") }}</th>
+                    <th>{{ _("Manzil") }}</th>
+                    <th>{{ _("Jami") }}</th>
+                    <th>{{ _("Chek") }}</th>
+                    <th>{{ _("Sana") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order['id'] }}</td>
+                    <td>{{ order['name'] }}</td>
+                    <td>{{ order['phone'] }}</td>
+                    <td>{{ order['address'] }}</td>
+                    <td><b>{{ order['total_price'] }} {{ _("so‘m") }}</b></td>
+                    <td>
+                        {% if order['receipt'] %}
+                            <a href="{{ url_for('admin_receipt', filename=order['receipt']) }}" target="_blank">📎 {{ _("Chek") }}</a>
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </td>
+                    <td>{{ order['created_at'] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center; color:gray;">🚀 {{ _("Buyurtmalar hali yo‘q") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

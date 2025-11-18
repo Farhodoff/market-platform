@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ _("Bosh sahifa") }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          background: #f9fafb;
+          color: #111827;
+      }
+      .container {
+          max-width: 900px;
+          margin: auto;
+          padding: 20px;
+      }
+      h1 {
+          text-align: center;
+          margin-bottom: 10px;
+      }
+      p {
+          text-align: center;
+          margin-bottom: 30px;
+          color: #555;
+      }
+      .categories {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 15px;
+      }
+      .category-card {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          padding: 20px;
+          text-align: center;
+          font-size: 16px;
+          font-weight: bold;
+          text-decoration: none;
+          color: #111827;
+          transition: 0.2s;
+      }
+      .category-card:hover {
+          background: #2563eb;
+          color: #fff;
+      }
+
+      /* 🔥 Aksiya mahsulotlari uchun maxsus style */
+      .category-card.promo {
+          background: linear-gradient(135deg, #ef4444, #f97316);
+          color: #fff;
+          animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+          0% { box-shadow: 0 0 10px rgba(239,68,68,0.6); }
+          50% { box-shadow: 0 0 20px rgba(249,115,22,0.9); }
+          100% { box-shadow: 0 0 10px rgba(239,68,68,0.6); }
+      }
+
+      .bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-around;
+          background: #fff;
+          border-top: 1px solid #ddd;
+          padding: 10px 0;
+      }
+      .bottom-nav a {
+          text-decoration: none;
+          color: #374151;
+          font-size: 14px;
+      }
+      .bottom-nav a.active {
+          color: #2563eb;
+          font-weight: bold;
+      }
+  </style>
+</head>
+<body>
+<div class="container">
+    <h1>👋 {{ _("Salom") }}, <span id="userName">{{ _("Foydalanuvchi") }}</span>!</h1>
+    <p>{{ _("Kategoriyalarni tanlang va xaridni boshlang 🚀") }}</p>
+
+    <h2>📂 {{ _("Kategoriyalar") }}</h2>
+    <div class="categories">
+        {% for c in categories %}
+            <a href="/products/{{ c['id'] }}"
+               class="category-card {% if c['name_uz']=='Aksiya mahsulotlari' or c['name_ru']=='Акционные товары' %}promo{% endif %}">
+                {{ c['name'] }}
+            </a>
+        {% else %}
+            <p style="grid-column: 1/-1; text-align:center; color:gray;">
+                {{ _("Hali kategoriyalar qo‘shilmagan 😔") }}
+            </p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pastki navigatsiya -->
+<div class="bottom-nav">
+    <a href="/" class="active">🏠 {{ _("Bosh sahifa") }}</a>
+    <a href="/cart">🛒 {{ _("Savatcha") }}</a>
+    <a href="/orders">📋 {{ _("Buyurtmalarim") }}</a>
+</div>
+
+<!-- Telegram WebApp JS -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    const tg = window.Telegram.WebApp;
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        document.getElementById("userName").innerText = tg.initDataUnsafe.user.first_name;
+    }
+</script>
+</body>
+</html>

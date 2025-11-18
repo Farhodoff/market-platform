@@ -1,0 +1,88 @@
+msgid ""
+msgstr ""
+"Language: uz\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Bosh sahifa"
+msgstr "Bosh sahifa"
+
+msgid "Savatcha"
+msgstr "Savatcha"
+
+msgid "Salom"
+msgstr "Salom"
+
+msgid "Foydalanuvchi"
+msgstr "Foydalanuvchi"
+
+msgid "Kategoriyalarni tanlang va xaridni boshlang 🚀"
+msgstr "Kategoriyalarni tanlang va xaridni boshlang 🚀"
+
+msgid "Kategoriyalar"
+msgstr "Kategoriyalar"
+
+msgid "Hali kategoriyalar qo‘shilmagan 😔"
+msgstr "Hali kategoriyalar qo‘shilmagan 😔"
+
+msgid "so‘m"
+msgstr "so‘m"
+
+msgid "Mahsulotlar summasi"
+msgstr "Mahsulotlar summasi"
+
+msgid "Yetkazib berish"
+msgstr "Yetkazib berish"
+
+msgid "Umumiy summa"
+msgstr "Umumiy summa"
+
+msgid "To‘lovga o‘tish"
+msgstr "To‘lovga o‘tish"
+
+msgid "Savatcha bo‘sh 🚀"
+msgstr "Savatcha bo‘sh 🚀"
+
+msgid "Xatolik yuz berdi"
+msgstr "Xatolik yuz berdi"
+
+msgid "Minimal buyurtma 100 000 so‘m"
+msgstr "Minimal buyurtma 100 000 so‘m"
+
+msgid "⬅️Orqaga"
+msgstr "⬅️Orqaga"
+
+msgid "Buyurtmalarim"
+msgstr "Buyurtmalarim"
+
+msgid "Sizda hali buyurtmalar mavjud emas."
+msgstr "Sizda hali buyurtmalar mavjud emas."
+
+msgid "Ism"
+msgstr "Ism"
+
+msgid "Telefon"
+msgstr "Telefon"
+
+msgid "Manzil"
+msgstr "Manzil"
+
+msgid "Jami"
+msgstr "Jami"
+
+msgid "Sana"
+msgstr "Sana"
+
+msgid "Chek"
+msgstr "Chek"
+
+msgid "Ko‘rish"
+msgstr "Ko‘rish"
+
+msgid "Kutilmoqda"
+msgstr "Kutilmoqda"
+
+msgid "Tasdiqlandi"
+msgstr "Tasdiqlandi"
+
+msgid "Bajarildi"
+msgstr "Bajarildi"

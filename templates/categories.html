@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{ _("Kategoriyalar") }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2 style="text-align:center; margin-bottom:10px;">📂 {{ _("Kategoriyalar") }}</h2>
+    <p style="text-align:center; color:#6b7280; margin-bottom:20px;">
+        {{ _("Kategoriyani tanlab xaridni boshlang 🚀") }}
+    </p>
+
+    <div class="categories">
+        {% for c in categories %}
+            {% set cls = ['green','blue','pink','orange','red','purple','brown',
+                          'teal','yellow','darkgreen','gray','default'][loop.index0 % 12] %}
+            <a href="/products/{{ c['id'] }}" class="category-card {{ cls }}">
+                {{ c['name'] }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pastki navigatsiya -->
+<div class="bottom-nav">
+    <a href="/">🏠 {{ _("Bosh sahifa") }}</a>
+    <a href="/cart">🛒 {{ _("Savatcha") }}</a>
+    <a href="/orders">📋 {{ _("Buyurtmalarim") }}</a>
+</div>
+</body>
+</html>

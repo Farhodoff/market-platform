@@ -1,0 +1,171 @@
+msgid ""
+msgstr ""
+"Language: ru\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# --- Frontend ---
+msgid "Bosh sahifa"
+msgstr "Главная"
+
+msgid "Savatcha"
+msgstr "Корзина"
+
+msgid "Buyurtmalarim"
+msgstr "Мои заказы"
+
+msgid "Salom"
+msgstr "Привет"
+
+msgid "Foydalanuvchi"
+msgstr "Пользователь"
+
+msgid "Kategoriyalarni tanlang va xaridni boshlang 🚀"
+msgstr "Выберите категорию и начните покупки 🚀"
+
+msgid "Kategoriyalar"
+msgstr "Категории"
+
+msgid "Hali kategoriyalar qo‘shilmagan 😔"
+msgstr "Категории пока не добавлены 😔"
+
+msgid "so‘m"
+msgstr "сум"
+
+msgid "Mahsulotlar summasi"
+msgstr "Сумма товаров"
+
+msgid "Yetkazib berish"
+msgstr "Доставка"
+
+msgid "Umumiy summa"
+msgstr "Общая сумма"
+
+msgid "To‘lovga o‘tish"
+msgstr "Перейти к оплате"
+
+msgid "Savatcha bo‘sh 🚀"
+msgstr "Корзина пуста 🚀"
+
+msgid "Xatolik yuz berdi"
+msgstr "Произошла ошибка"
+
+msgid "Minimal buyurtma 100 000 so‘m"
+msgstr "Минимальный заказ 100 000 сум"
+
+msgid "Orqaga"
+msgstr "Назад"
+
+# --- Admin panel ---
+msgid "Admin Panel"
+msgstr "Админ Панель"
+
+msgid "Dashboard"
+msgstr "Главная"
+
+msgid "Mahsulotlar"
+msgstr "Товары"
+
+msgid "Kategoriyalar"
+msgstr "Категории"
+
+msgid "Buyurtmalar"
+msgstr "Заказы"
+
+msgid "Chiqish"
+msgstr "Выход"
+
+msgid "Kategoriyalar ro‘yxati"
+msgstr "Список категорий"
+
+msgid "Yangi Kategoriya"
+msgstr "Новая категория"
+
+msgid "Kategoriya nomi"
+msgstr "Название категории"
+
+msgid "Kategoriya tavsifi"
+msgstr "Описание категории"
+
+msgid "Bekor qilish"
+msgstr "Отмена"
+
+msgid "Saqlash"
+msgstr "Сохранить"
+
+msgid "Hech qanday kategoriya topilmadi"
+msgstr "Категории не найдены"
+
+msgid "Mahsulotni Tahrirlash"
+msgstr "Редактировать товар"
+
+msgid "Narxi"
+msgstr "Цена"
+
+msgid "Qo‘shish"
+msgstr "Добавить"
+
+msgid "Barcha Mahsulotlar"
+msgstr "Все товары"
+
+msgid "Tahrirlash"
+msgstr "Редактировать"
+
+msgid "O‘chirish"
+msgstr "Удалить"
+
+msgid "Foydalanuvchilar"
+msgstr "Пользователи"
+
+msgid "Foydalanuvchilar Ro‘yxati"
+msgstr "Список пользователей"
+
+msgid "Hali foydalanuvchi mavjud emas"
+msgstr "Пользователей пока нет"
+
+msgid "Buyurtmalar Ro‘yxati"
+msgstr "Список заказов"
+
+msgid "Hali buyurtma yo‘q"
+msgstr "Пока заказов нет"
+
+msgid "Buyurtmalarim"
+msgstr "Мои заказы"
+
+msgid "Sizda hali buyurtmalar mavjud emas."
+msgstr "🚀 У вас пока нет заказов."
+
+msgid "⬅️Orqaga"
+msgstr "⬅️Назад"
+
+msgid "Ism"
+msgstr "Имя"
+
+msgid "Telefon"
+msgstr "Телефон"
+
+msgid "Manzil"
+msgstr "Адрес"
+
+msgid "Jami"
+msgstr "Итого"
+
+msgid "Sana"
+msgstr "Дата"
+
+msgid "Chek"
+msgstr "Чек"
+
+msgid "Ko‘rish"
+msgstr "Посмотреть"
+
+msgid "Kutilmoqda"
+msgstr "В ожидании"
+
+msgid "Tasdiqlandi"
+msgstr "Подтверждено"
+
+msgid "Bajarildi"
+msgstr "Выполнено"
+
+msgid "Savatchaga"
+msgstr "В корзину"

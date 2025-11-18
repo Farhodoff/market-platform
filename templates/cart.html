@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ _("Savatcha") }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 20px;
+    }
+    .cart-container {
+      max-width: 750px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #111827;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .item-info {
+      font-size: 15px;
+      color: #111827;
+      font-weight: 500;
+    }
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quantity-controls button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: #f3f4f6;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .quantity-controls button:hover {
+      background: #d1d5db;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #ef4444;
+      margin-left: 10px;
+    }
+    .remove-btn:hover {
+      color: #dc2626;
+    }
+    .summary {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f9fafb;
+    }
+    .summary p {
+      margin: 6px 0;
+      font-size: 15px;
+      color: #374151;
+    }
+    .summary strong {
+      font-size: 16px;
+      color: #111827;
+    }
+    .checkout-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .checkout-btn:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+    .checkout-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    .empty {
+      text-align: center;
+      color: gray;
+      font-size: 15px;
+      margin-top: 30px;
+    }
+    .back-btn {
+      display: block;
+      margin: 20px auto 0;
+      text-align: center;
+      padding: 10px 16px;
+      background: #6b7280;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      max-width: 180px;
+    }
+    .back-btn:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body>
+<div class="cart-container">
+  <h2>🛒 {{ _("Savatcha") }}</h2>
+  {% if cart %}
+    {% for item in cart %}
+      <div class="cart-item">
+        <div class="item-info">
+          {{ item.name }} <br>
+          <small>{{ item.price }} {{ _("so‘m") }} × {{ item.quantity }}</small>
+        </div>
+        <div class="quantity-controls">
+          <button onclick="updateQuantity('{{ item.name }}', -1)">➖</button>
+          <span>{{ item.quantity }}</span>
+          <button onclick="updateQuantity('{{ item.name }}', 1)">➕</button>
+          <button class="remove-btn" onclick="removeFromCart('{{ item.name }}')">🗑</button>
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="summary">
+      <p>🛍 {{ _("Mahsulotlar summasi") }}: <strong>{{ total - delivery_fee }} {{ _("so‘m") }}</strong></p>
+      <p>🚚 {{ _("Yetkazib berish") }}: <strong>{{ delivery_fee }} {{ _("so‘m") }}</strong></p>
+      <p>💰 {{ _("Umumiy summa") }}: <strong id="totalPrice">{{ total }} {{ _("so‘m") }}</strong></p>
+    </div>
+
+    <form action="/checkout" method="get">
+      <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
+      <button type="submit" id="checkoutBtn" class="checkout-btn">
+        ➡️ {{ _("To‘lovga o‘tish") }}
+      </button>
+    </form>
+  {% else %}
+    <p class="empty">{{ _("Savatcha bo‘sh 🚀") }}</p>
+  {% endif %}
+</div>
+
+<a href="javascript:history.back()" class="back-btn">⬅️ {{ _("Orqaga") }}</a>
+
+<script>
+async function updateQuantity(name, change) {
+  const res = await fetch("/update_cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: name, change: change })
+  });
+  const data = await res.json();
+  if (data.status === "success") location.reload();
+  else alert("❌ {{ _('Xatolik yuz berdi') }}");
+}
+
+async function removeFromCart(name) {
+  const res = await fetch("/remove_from_cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: name })
+  });
+  const data = await res.json();
+  if (data.status === "success") location.reload();
+  else alert("❌ {{ _('Xatolik yuz berdi') }}");
+}
+
+window.onload = function () {
+  const totalText = document.getElementById("totalPrice")?.innerText;
+  if (!totalText) return;
+  const total = parseInt(totalText.replace(/\D/g, ""));
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (total < 100000) {
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerText = "❌ {{ _('Minimal buyurtma 100 000 so‘m') }}";
+  }
+};
+</script>
+</body>
+</html>

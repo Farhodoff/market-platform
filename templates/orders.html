@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 {{ _("Buyurtmalarim") }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f9fafb; padding: 15px; }
+        .container { max-width: 950px; margin: auto; }
+        h2 { margin-bottom: 15px; color: #111827; text-align: center; }
+
+        .order-card {
+            background: #fff; padding: 15px; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 15px;
+        }
+        .order-card h3 { margin: 0 0 10px; font-size: 16px; color: #2563eb; }
+        .order-info p { margin: 4px 0; font-size: 14px; color: #374151; }
+        .order-info strong { color: #111827; }
+
+        .product-list { margin-top: 10px; padding-left: 18px; font-size: 14px; }
+        .product-list li { margin-bottom: 4px; }
+
+        .status {
+            display: inline-block; padding: 5px 10px; border-radius: 6px;
+            color: white; font-size: 12px; margin-top: 8px;
+        }
+        .status.kutilmoqda { background: #f59e0b; }
+        .status.tasdiqlandi { background: #3b82f6; }
+        .status.bajarildi { background: #16a34a; }
+
+        a.back-btn {
+            display: block; margin: 20px auto; max-width: 200px;
+            text-align: center; padding: 12px;
+            background: #2563eb; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 15px;
+        }
+        a.back-btn:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📋 {{ _("Buyurtmalarim") }}</h2>
+
+    {% if orders %}
+        {% for o in orders %}
+        <div class="order-card">
+            <h3>🆔 #{{ loop.index }} — {{ _("Buyurtma") }}</h3>
+            <div class="order-info">
+                <p><strong>👤 {{ _("Ism") }}:</strong> {{ o['name'] }}</p>
+                <p><strong>📞 {{ _("Telefon") }}:</strong> {{ o['phone'] }}</p>
+
+                <p><strong>📍 {{ _("Manzil") }}:</strong>
+                    {% if o['lat'] and o['lon'] %}
+                        <a href="https://www.google.com/maps?q={{ o['lat'] }},{{ o['lon'] }}" target="_blank">Google Maps</a>
+                    {% else %}
+                        {{ o['address'] }}
+                    {% endif %}
+                </p>
+
+                <!-- 🛒 Mahsulotlar ro‘yxati -->
+                <p><strong>🛒 {{ _("Mahsulotlar") }}:</strong></p>
+                <ul class="product-list">
+                    {% for item in o['items'] %}
+                        <li>{{ item['product_name'] }} × {{ item['quantity'] }} ({{ item['price'] }} so‘m)</li>
+                    {% endfor %}
+                </ul>
+
+                <p><strong>💰 {{ _("Jami") }}:</strong> {{ "{:,}".format(o['total_price']|int).replace(",", " ") }} {{ _("so‘m") }}</p>
+
+                <span class="status
+                    {% if o['status'] == 'Kutilmoqda' %}kutilmoqda
+                    {% elif o['status'] == 'Tasdiqlandi' %}tasdiqlandi
+                    {% elif o['status'] == 'Bajarildi' %}bajarildi{% endif %}">
+                    {{ _(o['status']) }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: gray; font-size: 15px; text-align:center;">🚀 {{ _("Sizda hali buyurtmalar mavjud emas.") }}</p>
+    {% endif %}
+
+    <a href="/" class="back-btn">⬅️ {{ _("Orqaga") }}</a>
+</div>
+</body>
+</html>

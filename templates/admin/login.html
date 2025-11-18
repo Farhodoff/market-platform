@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 {{ _("Admin Login") }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff, #f9fafb);
+            font-family: "Poppins", Arial, sans-serif;
+            margin: 0;
+        }
+        .login-box {
+            background: white;
+            padding: 35px 28px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #111827;
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .login-box .logo {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .login-box .logo img {
+            width: 60px;
+            border-radius: 50%;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input:focus {
+            border-color: #2563eb;
+        }
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+            transform: translateY(-2px);
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-align: center;
+            animation: shake 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95);}
+            to { opacity: 1; transform: scale(1);}
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-2px); }
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 25px 20px;
+                width: 92%;
+            }
+            h2 {
+                font-size: 19px;
+            }
+            input, button {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-box">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='admin_icon.png') }}" alt="Admin">
+    </div>
+    <h2>🔐 {{ _("Admin Panelga kirish") }}</h2>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        <input type="text" name="username" placeholder="👤 {{ _('Login') }}" required>
+        <input type="password" name="password" placeholder="🔑 {{ _('Parol') }}" required>
+        <button type="submit">➡️ {{ _('Kirish') }}</button>
+    </form>
+</div>
+</body>
+</html>

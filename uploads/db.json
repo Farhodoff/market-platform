@@ -1,0 +1,189 @@
+{
+  "users": [
+    {
+      "id": "37e6",
+      "name": "qwertyui",
+      "email": "qwertyui@gmail.com",
+      "phone": "+998991234567",
+      "password": "asdfghj"
+    },
+    {
+      "id": "d65c",
+      "name": "Marjona",
+      "email": "solivayevamanzura@gmail.com",
+      "phone": "+998940631343",
+      "password": "sevara34"
+    },
+    {
+      "id": "0247",
+      "name": "Dilsora",
+      "email": "Dilsor@gmail.com",
+      "phone": "+998940631349",
+      "password": "dilsora"
+    },
+    {
+      "id": "1ab3",
+      "name": "fara",
+      "email": "fsoyilov@gmail.com",
+      "phone": "+998999520778",
+      "password": "farhod12"
+    }
+  ],
+  "reviews": [
+    {
+      "rating": 5,
+      "author": "Ali",
+      "text": "Ajoyib stadion!",
+      "id": "c6bf"
+    },
+    {
+      "rating": 4,
+      "author": "Oydin",
+      "text": "Kattaroq maydon bo‘lishi mumkin edi.",
+      "id": "0874"
+    }
+  ],
+  "stadions": [
+    {
+      "id": "1",
+      "name": "Bunyodkor",
+      "location": "Toshkent",
+      "times": [
+        {
+          "id": 1,
+          "time": "9:00 – 10:00"
+        },
+        {
+          "id": 2,
+          "time": "10:00 – 11:00"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Pakhtakor",
+      "location": "Toshkent",
+      "times": [
+        {
+          "id": 3,
+          "time": "11:00 – 12:00"
+        },
+        {
+          "id": 4,
+          "time": "12:00 – 13:00"
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "fc3a",
+      "sana": "2025-04-11",
+      "vaqt": "11:00–12:00",
+      "davomiylik": 1,
+      "stadium": "Pakhtakor"
+    },
+    {
+      "id": "dfe3",
+      "sana": "2025-04-13",
+      "vaqt": "10:00–11:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "9b64",
+      "sana": "2025-04-12",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "da3c",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "1037",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "5e4a",
+      "sana": "2025-04-11",
+      "vaqt": "10:00 – 11:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "832e",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "0885",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "76b9",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "59c5",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "d84e",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "f433",
+      "sana": "2025-04-11",
+      "vaqt": "9:00 – 10:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    },
+    {
+      "id": "861e",
+      "sana": "2025-04-11",
+      "vaqt": "10:00 – 11:00",
+      "davomiylik": 1,
+      "stadium": "Bunyodkor"
+    }
+  ],
+  "availableTimes": [
+    {
+      "id": "1",
+      "time": "9:00 – 10:00"
+    },
+    {
+      "id": "2",
+      "time": "10:00 – 11:00"
+    },
+    {
+      "id": "3",
+      "time": "11:00 – 12:00"
+    },
+    {
+      "id": "4",
+      "time": "12:00 – 13:00"
+    }
+  ]
+}

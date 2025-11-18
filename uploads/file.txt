@@ -1,0 +1,188 @@
+Falsafada mantiq (ya'ni mantiq ilmi) — bu fikrlashning qonunlari, shakllari va uslublarini o‘rganuvchi falsafiy fan bo‘lib, u inson tafakkurining to‘g‘ri va asosli bo‘lishi uchun qo‘llanadi.
+
+
+
+Mantiq nima?
+
+Mantiq — bu to‘g‘ri fikrlash san’ati va ilmi. U fikrlarni aniqlash, ularni tahlil qilish, asoslash va xulosalash usullarini o‘rgatadi.
+
+
+
+Mantiqning asosiy vazifalari:
+
+To‘g‘ri fikrlashni o‘rgatish – noto‘g‘ri xulosa va xatoliklardan saqlanish.
+
+
+
+Bahs yuritishda aniq va asosli fikr bildirish.
+
+
+
+Ilmiy izlanishlarda ishonchli dalillar keltirish.
+
+Mashhur mantiqchilar:
+
+Aristotel – formal mantiq asoschisi, silogizm nazariyasini yaratgan.
+
+
+
+Forobiy – Aristotel mantig‘ini musulmon olamiga tanitgan, o‘ziga xos sharhlar bergan.
+
+
+
+Ibn Sino (Avitsenna) – mantiqni tibbiyot va falsafaga tatbiq qilgan.
+
+Mantiq qonunlari:
+
+AYNIYAT QONUNI,Nozidlik qonuni,Uchinchisi – istisno” qonuni,Yetarli asos qonuni
+
+
+
+
+
+Ibn Rushd (Averroes) — 1126-yilda Andalusiyada (hozirgi Ispaniya) tug‘ilgan, buyuk musulmon faylasufi, tabib, huquqshunos va mufassir bo‘lgan. U G‘arbda Averroes nomi bilan tanilgan.
+
+Hayoti qisqacha:
+	•	Ibn Rushd Kordova shahrida tug‘ilgan va ilmiy muhitda voyaga yetgan.
+	•	Uning otasi va bobosi ham yuridik ilmlarda mashhur bo‘lgan.
+	•	U falsafa, tibbiyot, fiqh va astronomiya fanlarini chuqur o‘rgangan.
+	•	1169-yildan 1195-yilgacha Andalusiyada yuqori lavozimlarda ishlagan.
+	•	1198-yilda vafot etgan.
+
+Ijodi va falsafaga qo‘shgan hissasi:
+	•	Aristotel falsafasining eng muhim sharhlovchisi hisoblanadi. Uning Aristotel asarlariga yozgan izohlari G‘arb falsafasi rivojiga katta ta’sir qilgan.
+	•	Aql va din o‘rtasidagi uyg‘unlikni targ‘ib qilgan. Uning fikricha, diniy haqiqatlar aql bilan ham tasdiqlanishi mumkin.
+	•	“Tafsir al-kashf” va “Tahafut at-Tahafut” asarlarida G‘azzoliy tanqidiga qarshi turib, falsafani himoya qilgan.
+	•	Ibn Rushdning qarashlari Yevropada skolastik falsafaga asos bo‘lgan va Renessans davrida qayta ochilgan.
+
+Xulosasi:
+
+Ibn Rushd — Islom va G‘arb falsafasini bog‘lovchi muhim ko‘prik bo‘lgan, aql va imonni uyg‘unlashtirishga harakat qilgan mutafakkirdir.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TUSHUNCHA (TA’RIF)
+
+Tushuncha — bu biror narsaning umumiy va muhim belgilarini bildiruvchi fikr shakli.
+
+
+
+Misollar:
+
+1.1. "Qush — qanotli va tuxum qo‘yuvchi hayvondir."
+
+📌 Sharh: Bu ta’rif qushlarning asosiy belgilarini bildiradi (qanotli, tuxum qo‘yadi).
+
+
+
+1.2. "Kvadrat — to‘rt tomoni teng va barcha burchaklari 90° bo‘lgan to‘g‘riburchak."
+
+📌 Sharh: Kvadratni boshqa shakllardan ajratib turuvchi belgilari berilgan.
+
+
+
+1.3. "Shifokor — bemorlarni davolovchi tibbiyot sohasidagi mutaxassis."
+
+📌 Sharh: Kasb egasining asosiy faoliyati va sohasi tushuntirilgan.
+
+
+
+2. HUKM (MULОHAZA)
+
+Hukm — bu biror narsani tasdiqlash yoki inkor etish orqali bildirilgan fikr.
+
+
+
+Misollar:
+
+2.1. "Yer Quyosh atrofida harakat qiladi."
+
+📌 Sharh: Bu ilmiy asoslangan, tasdiqlovchi hukm.
+
+
+
+2.2. "Har bir inson huquqlarga ega."
+
+📌 Sharh: Umumiy ijtimoiy-falsafiy fikr, tasdiqlovchi hukm.
+
+
+
+2.3. "Metall suvda erimaydi."
+
+📌 Sharh: Bu ilmiy asosga ega inkor etuvchi hukm.
+
+
+
+3. XULOSA
+
+Xulosa — bir necha hukm asosida chiqarilgan yangi fikr.
+
+
+
+Misollar:
+
+3.1.
+
+
+
+Hukm 1: Hamma odamlar o‘limlidir.
+
+
+
+Hukm 2: Umar odam.
+
+
+
+Xulosa: Demak, Umar ham o‘limlidir.
+
+📌 Sharh: Bu silogizm asosida chiqarilgan xulosa bo‘lib, mantiqan to‘g‘ri.
+
+
+
+3.2.
+
+
+
+Hukm 1: Barcha qushlarning qanoti bor.
+
+
+
+Hukm 2: Laylak — qush.
+
+
+
+Xulosa: Demak, laylakning qanoti bor.
+
+📌 Sharh: Xususiy hol umumiy hukmga asoslanib chiqarilgan.
+
+
+
+3.3.
+
+
+
+Hukm 1: Darsga kelmagan o‘quvchi imtihon topshirolmaydi.
+
+
+
+Hukm 2: Aziz darsga kelmagan.
+
+
+
+Xulosa: Demak, Aziz imtihon topshirolmaydi.
+
+📌 Sharh: Mantiqiy bog‘liqlik asosida yangi fikr chiqarilgan.

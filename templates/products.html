@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="{{ g.locale }}">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _("Mahsulotlar") }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding-bottom: 80px; /* pastki back-btn uchun joy */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #111827;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .product-card h3 {
+            font-size: 18px;
+            color: #1f2937;
+            margin: 10px 0 5px;
+        }
+        .product-card b {
+            font-size: 16px;
+            color: #2563eb;
+        }
+        .product-card button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .product-card button:hover {
+            background: #1d4ed8;
+        }
+
+        /* iOS-style floating back button */
+        .back-btn {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .back-btn:hover {
+            background: rgba(0,0,0,0.75);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🛍 {{ _("Mahsulotlar") }}</h2>
+    <div class="products">
+        {% for p in products %}
+            <div class="product-card">
+                <img src="{{ p['image'] }}" alt="{{ p['name'] }}">
+                <h3>{{ p['name'] }}</h3>
+                <b>{{ "{:,}".format(p['price']|int).replace(",", " ") }} {{ _("so‘m") }}</b><br>
+                <button onclick="addToCart('{{ p['name'] }}', {{ p['price'] }})">➕ {{ _("Savatchaga") }}</button>
+            </div>
+        {% else %}
+            <p style="grid-column: 1/-1; text-align:center; color:gray;">
+                {{ _("Hozircha mahsulot mavjud emas 🚀") }}
+            </p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+async function addToCart(name, price) {
+    try {
+        const res = await fetch("/add_to_cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name, price: price })
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ {{ _('Xatolik yuz berdi') }}");
+        }
+    } catch (e) {
+        alert("❌ Server bilan aloqa uzildi!");
+    }
+}
+</script>
+
+<!-- Floating back button -->
+<a href="javascript:history.back()" class="back-btn">⬅️ {{ _("Orqaga") }}</a>
+</body>
+</html>

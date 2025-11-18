@@ -1,0 +1,40 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ _("Kategoriya tahrirlash") }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm" style="max-width: 600px; margin: auto;">
+  <div class="card-body">
+    <h4 class="mb-3">📂 {{ _("Kategoriya tahrirlash") }}</h4>
+    <form method="POST">
+
+      <!-- Uzbekcha nom -->
+      <div class="mb-3">
+        <label for="name_uz" class="form-label">{{ _("Kategoriya nomi (UZ)") }} *</label>
+        <input type="text" id="name_uz" name="name_uz"
+               value="{{ category['name_uz'] or '' }}" required
+               class="form-control"
+               placeholder="{{ _('Masalan: Ichimliklar') }}">
+      </div>
+
+      <!-- Ruscha nom -->
+      <div class="mb-3">
+        <label for="name_ru" class="form-label">{{ _("Kategoriya nomi (RU)") }}</label>
+        <input type="text" id="name_ru" name="name_ru"
+               value="{{ category['name_ru'] or '' }}"
+               class="form-control"
+               placeholder="{{ _('Например: Напитки') }}">
+      </div>
+
+      <!-- Action tugmalar -->
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{{ url_for('admin_categories') }}" class="btn btn-light">
+          {{ _("Bekor qilish") }}
+        </a>
+        <button type="submit" class="btn btn-primary">
+          💾 {{ _("Saqlash") }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

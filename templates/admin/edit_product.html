@@ -1,0 +1,32 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ _("Mahsulotni Tahrirlash") }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>✏️ {{ _("Mahsulotni Tahrirlash") }}</h2>
+  <form action="" method="POST" enctype="multipart/form-data" class="form-grid">
+    <input type="text" name="name" value="{{ product['name'] }}" required placeholder="{{ _('Mahsulot nomi') }}">
+    <input type="number" name="price" value="{{ product['price'] }}" required placeholder="{{ _('Narxi') }}">
+
+    <select name="category_id" required>
+  {% for c in categories %}
+    <option value="{{ c['id'] }}" {% if c['id'] == product['category_id'] %}selected{% endif %}>
+      {{ c['name_uz'] if c['name_uz'] else c['name_ru'] }}
+    </option>
+  {% endfor %}
+</select>D
+
+    <p>{{ _("Joriy rasm") }}:</p>
+    {% if product['image'] %}
+      <img src="{{ product['image'] }}" alt="img" style="width:80px; border-radius:6px;">
+    {% else %}
+      <span>—</span>
+    {% endif %}
+
+    <input type="file" name="image" accept="image/*">
+
+    <button type="submit" class="btn-success">💾 {{ _("Saqlash") }}</button>
+    <a href="{{ url_for('admin_products') }}" class="btn-danger">⬅️ {{ _("Bekor qilish") }}</a>
+  </form>
+</div>
+{% endblock %}
