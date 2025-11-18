@@ -27,7 +27,7 @@ ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "220286"
 
 # 🤖 Telegram bot sozlamalari
-BOT_TOKEN = "8358580670:AAFcgvDfmkA4U6utmfFn9qgfOU0EA3gX17A"
+BOT_TOKEN = "8358580670:AAFgL2pyzykpgumFMpOESf78O32wFj9Y-6A"
 TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 # =====================
