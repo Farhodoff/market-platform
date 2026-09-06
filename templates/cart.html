@@ -129,76 +129,163 @@
   </style>
 </head>
 <body>
-<div class="cart-container">
+<div id="toastContainer" class="toast-container"></div>
+
+<div class="cart-container" id="cartApp">
   <h2>🛒 {{ _("Savatcha") }}</h2>
-  {% if cart %}
-    {% for item in cart %}
-      <div class="cart-item">
-        <div class="item-info">
-          {{ item.name }} <br>
-          <small>{{ item.price }} {{ _("so‘m") }} × {{ item.quantity }}</small>
-        </div>
-        <div class="quantity-controls">
-          <button onclick="updateQuantity('{{ item.name }}', -1)">➖</button>
-          <span>{{ item.quantity }}</span>
-          <button onclick="updateQuantity('{{ item.name }}', 1)">➕</button>
-          <button class="remove-btn" onclick="removeFromCart('{{ item.name }}')">🗑</button>
-        </div>
-      </div>
-    {% endfor %}
 
-    <div class="summary">
-      <p>🛍 {{ _("Mahsulotlar summasi") }}: <strong>{{ total - delivery_fee }} {{ _("so‘m") }}</strong></p>
-      <p>🚚 {{ _("Yetkazib berish") }}: <strong>{{ delivery_fee }} {{ _("so‘m") }}</strong></p>
-      <p>💰 {{ _("Umumiy summa") }}: <strong id="totalPrice">{{ total }} {{ _("so‘m") }}</strong></p>
+  {% if error %}
+    <div style="background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; text-align: center; font-weight: 500;">
+      {{ error }}
     </div>
-
-    <form action="/checkout" method="get">
-      <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
-      <button type="submit" id="checkoutBtn" class="checkout-btn">
-        ➡️ {{ _("To‘lovga o‘tish") }}
-      </button>
-    </form>
-  {% else %}
-    <p class="empty">{{ _("Savatcha bo‘sh 🚀") }}</p>
   {% endif %}
+
+  <div id="cartContent">
+    {% if cart %}
+      <div id="itemsList">
+        {% for item in cart %}
+          <div class="cart-item" id="item-{{ loop.index }}">
+            <div class="item-info">
+              <strong>{{ item.name }}</strong><br>
+              <small>{{ "{:,}".format(item.price|int).replace(",", " ") }} {{ _("so‘m") }} × {{ item.quantity }}</small>
+            </div>
+            <div class="quantity-controls">
+              <button type="button" data-name="{{ item.name }}" onclick="updateQuantity(this.getAttribute('data-name'), -1)">➖</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" data-name="{{ item.name }}" onclick="updateQuantity(this.getAttribute('data-name'), 1)">➕</button>
+              <button type="button" class="remove-btn" data-name="{{ item.name }}" onclick="removeFromCart(this.getAttribute('data-name'))">🗑</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="summary" id="cartSummary">
+        <p>🛍 {{ _("Mahsulotlar summasi") }}: <strong id="productsTotal">{{ "{:,}".format(products_total|int).replace(",", " ") }} {{ _("so‘m") }}</strong></p>
+        <p>🚚 {{ _("Yetkazib berish") }}: <strong id="deliveryFee">{{ "{:,}".format(delivery_fee|int).replace(",", " ") }} {{ _("so‘m") }}</strong></p>
+        <p>💰 {{ _("Umumiy summa") }}: <strong id="totalPrice">{{ "{:,}".format(total|int).replace(",", " ") }} {{ _("so‘m") }}</strong></p>
+      </div>
+
+      <form action="/checkout" method="get" id="checkoutForm">
+        <input type="hidden" name="tg_id" value="{{ session.get('tg_id', '') }}">
+        <button type="submit" id="checkoutBtn" class="checkout-btn"
+                {% if products_total < 100000 %}disabled{% endif %}>
+          {% if products_total < 100000 %}
+            ❌ {{ _("Minimal buyurtma 100 000 so‘m") }}
+          {% else %}
+            ➡️ {{ _("To‘lovga o‘tish") }}
+          {% endif %}
+        </button>
+      </form>
+    {% else %}
+      <p class="empty">{{ _("Savatcha bo‘sh 🚀") }}</p>
+    {% endif %}
+  </div>
 </div>
 
 <a href="javascript:history.back()" class="back-btn">⬅️ {{ _("Orqaga") }}</a>
 
 <script>
-async function updateQuantity(name, change) {
-  const res = await fetch("/update_cart", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: name, change: change })
+function showToast(msg, type = "success") {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerText = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(-10px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+function formatPrice(num) {
+  return Number(num).toLocaleString("ru-RU").replace(/,/g, " ");
+}
+
+function renderCartData(data) {
+  const container = document.getElementById("cartContent");
+  if (!data.cart || data.cart.length === 0) {
+    container.innerHTML = '<p class="empty">{{ _("Savatcha bo‘sh 🚀") }}</p>';
+    return;
+  }
+
+  let itemsHtml = '<div id="itemsList">';
+  data.cart.forEach((item, idx) => {
+    itemsHtml += `
+      <div class="cart-item" id="item-${idx}">
+        <div class="item-info">
+          <strong>${item.name}</strong><br>
+          <small>${formatPrice(item.price)} {{ _("so‘m") }} × ${item.quantity}</small>
+        </div>
+        <div class="quantity-controls">
+          <button type="button" data-name="${encodeURIComponent(item.name)}" onclick="updateQuantity(decodeURIComponent(this.getAttribute('data-name')), -1)">➖</button>
+          <span>${item.quantity}</span>
+          <button type="button" data-name="${encodeURIComponent(item.name)}" onclick="updateQuantity(decodeURIComponent(this.getAttribute('data-name')), 1)">➕</button>
+          <button type="button" class="remove-btn" data-name="${encodeURIComponent(item.name)}" onclick="removeFromCart(decodeURIComponent(this.getAttribute('data-name')))">🗑</button>
+        </div>
+      </div>
+    `;
   });
-  const data = await res.json();
-  if (data.status === "success") location.reload();
-  else alert("❌ {{ _('Xatolik yuz berdi') }}");
+  itemsHtml += '</div>';
+
+  itemsHtml += `
+    <div class="summary" id="cartSummary">
+      <p>🛍 {{ _("Mahsulotlar summasi") }}: <strong id="productsTotal">${formatPrice(data.products_total)} {{ _("so‘m") }}</strong></p>
+      <p>🚚 {{ _("Yetkazib berish") }}: <strong id="deliveryFee">${formatPrice(data.delivery_fee)} {{ _("so‘m") }}</strong></p>
+      <p>💰 {{ _("Umumiy summa") }}: <strong id="totalPrice">${formatPrice(data.total)} {{ _("so‘m") }}</strong></p>
+    </div>
+  `;
+
+  const isBelowMin = data.products_total < 100000;
+  itemsHtml += `
+    <form action="/checkout" method="get" id="checkoutForm">
+      <input type="hidden" name="tg_id" value="{{ session.get('tg_id', '') }}">
+      <button type="submit" id="checkoutBtn" class="checkout-btn" ${isBelowMin ? "disabled" : ""}>
+        ${isBelowMin ? "❌ {{ _('Minimal buyurtma 100 000 so‘m') }}" : "➡️ {{ _('To‘lovga o‘tish') }}"}
+      </button>
+    </form>
+  `;
+
+  container.innerHTML = itemsHtml;
+}
+
+async function updateQuantity(name, change) {
+  try {
+    const res = await fetch("/update_cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name, change: change })
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      renderCartData(data);
+    } else {
+      showToast("❌ {{ _('Xatolik yuz berdi') }}", "error");
+    }
+  } catch (e) {
+    showToast("❌ Server bilan aloqa uzildi!", "error");
+  }
 }
 
 async function removeFromCart(name) {
-  const res = await fetch("/remove_from_cart", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: name })
-  });
-  const data = await res.json();
-  if (data.status === "success") location.reload();
-  else alert("❌ {{ _('Xatolik yuz berdi') }}");
-}
-
-window.onload = function () {
-  const totalText = document.getElementById("totalPrice")?.innerText;
-  if (!totalText) return;
-  const total = parseInt(totalText.replace(/\D/g, ""));
-  const checkoutBtn = document.getElementById("checkoutBtn");
-  if (total < 100000) {
-    checkoutBtn.disabled = true;
-    checkoutBtn.innerText = "❌ {{ _('Minimal buyurtma 100 000 so‘m') }}";
+  try {
+    const res = await fetch("/remove_from_cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name })
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      showToast(data.message || "Mahsulot o'chirildi");
+      renderCartData(data);
+    } else {
+      showToast("❌ {{ _('Xatolik yuz berdi') }}", "error");
+    }
+  } catch (e) {
+    showToast("❌ Server bilan aloqa uzildi!", "error");
   }
-};
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Database
+shop.db
+shop.db-wal
+shop.db-shm
+*.sqlite3
+
+# Environment & Secrets
+.env
+.env.local
+
+# Uploads & User data
+uploads/*
+!uploads/.gitkeep
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+*.bak

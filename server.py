@@ -1,42 +1,87 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_from_directory, abort, g
-import sqlite3, os, requests
+import sqlite3, os, requests, uuid, hmac, hashlib, urllib.parse, json
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 from datetime import datetime
 import pytz
+from dotenv import load_dotenv
+from bot_notify import notify_admin
 import db
 from flask_babel import Babel, gettext as _
-from db import get_all_orders_with_items
-from db import get_orders_by_user
+from db import get_all_orders_with_items, get_orders_by_user
+
+load_dotenv()
+
 app = Flask(__name__)
 
 # 📂 Fayllar joylashuvi
 app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "uploads")   # foydalanuvchi chek
 app.config["PRODUCT_FOLDER"] = os.path.join("static", "products")    # mahsulot rasmlari
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 os.makedirs(app.config["PRODUCT_FOLDER"], exist_ok=True)
 app.config["BABEL_DEFAULT_LOCALE"] = "uz"
 app.config["BABEL_TRANSLATION_DIRECTORIES"] = "translations"
 
+# Ruxsat etilgan fayl turlari
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
-# 🔑 Session uchun secret key
-app.secret_key = "supersecretkey123"
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# 🔐 Admin login
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "220286"
+# 🔑 Session uchun secret key (.env dan)
+app.secret_key = os.getenv("SECRET_KEY", "market_platform_secret_2026_dev")
 
-# 🤖 Telegram bot sozlamalari
-BOT_TOKEN = "8358580670:AAFgL2pyzykpgumFMpOESf78O32wFj9Y-6A"
+# 🔐 Admin login (.env dan)
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", os.getenv("ADMIN_PASS", "220286"))
+
+def check_admin_credentials(username, password):
+    if username != ADMIN_USERNAME:
+        return False
+    if ADMIN_PASSWORD.startswith("pbkdf2:") or ADMIN_PASSWORD.startswith("scrypt:"):
+        return check_password_hash(ADMIN_PASSWORD, password)
+    return password == ADMIN_PASSWORD
+
+# 🤖 Telegram bot sozlamalari (.env dan)
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+def verify_telegram_init_data(init_data: str) -> dict:
+    """
+    Telegram WebApp initData ni HMAC-SHA256 orqali tekshirish.
+    Muvaffaqiyatli bo'lsa foydalanuvchi ma'lumotlari lug'atini, aks holda None qaytaradi.
+    """
+    if not init_data or not BOT_TOKEN:
+        return None
+    try:
+        parsed_data = dict(urllib.parse.parse_qsl(init_data, keep_blank_values=True))
+        hash_val = parsed_data.pop("hash", None)
+        if not hash_val:
+            return None
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed_data.items()))
+        secret_key = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
+        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        if calculated_hash == hash_val:
+            user_json = parsed_data.get("user")
+            if user_json:
+                return json.loads(user_json)
+            return parsed_data
+        return None
+    except Exception as e:
+        print("initData tekshirishda xatolik:", e)
+        return None
+
+# 💳 To'lov karta sozlamalari (.env dan)
+PAY_CARD_NUMBER = os.getenv("PAY_CARD_NUMBER", "9860 1201 4178 3197")
+PAY_CARD_OWNER = os.getenv("PAY_CARD_OWNER", "Zuhriddin Yuldoshev")
 
 # =====================
 # 🔗 DB ulanish
 # =====================
 def get_db_connection():
-    conn = sqlite3.connect("shop.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    return db.get_connection()
 
 # =====================
 # 🌍 Babel (Flask-Babel v4) sozlamalari
@@ -102,6 +147,28 @@ def set_language_route(lang):
 
     return redirect(request.referrer or url_for("index"))
 
+# 🔐 Telegram WebApp initData orqali xavfsiz avtorizatsiya API
+@app.route("/api/auth_telegram", methods=["POST"])
+def auth_telegram():
+    data = request.get_json() or {}
+    init_data = data.get("initData")
+    if not init_data:
+        return jsonify({"status": "error", "message": "initData talab qilinadi"}), 400
+
+    user_info = verify_telegram_init_data(init_data)
+    if not user_info:
+        return jsonify({"status": "error", "message": "Telegram imzosi haqiqiy emas"}), 403
+
+    tg_id = str(user_info.get("id"))
+    session["tg_id"] = tg_id
+    first_name = user_info.get("first_name", "")
+    last_name = user_info.get("last_name", "")
+    full_name = f"{first_name} {last_name}".strip() or "Telegram Foydalanuvchi"
+    user = db.get_user_by_tg_id(tg_id)
+    if not user:
+        db.add_user(tg_id, full_name, lang=user_info.get("language_code", "uz"))
+    return jsonify({"status": "success", "tg_id": tg_id, "user": user_info})
+
 # =====================
 # 🔒 Admin login decorator
 # =====================
@@ -141,12 +208,13 @@ def index():
 @app.route("/products/<int:category_id>")
 def products(category_id):
     conn = get_db_connection()
-    products = conn.execute(
-        "SELECT id, name, price, image FROM products WHERE category_id = ?",
+    products_rows = conn.execute(
+        "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available FROM products WHERE category_id = ?",
         (category_id,)
     ).fetchall()
+    category = conn.execute("SELECT id, name_uz, name_ru FROM categories WHERE id = ?", (category_id,)).fetchone()
     conn.close()
-    return render_template("products.html", products=products)
+    return render_template("products.html", products=products_rows, category=category)
 
 # 🛒 Savatchaga qo‘shish (AJAX)
 @app.route("/add_to_cart", methods=["POST"])
@@ -158,9 +226,21 @@ def add_to_cart():
     if not product_name or price <= 0:
         return jsonify({"status": "error", "message": "Noto‘g‘ri mahsulot ma’lumoti"}), 400
 
+    # Ombor qoldig'ini tekshirish
+    conn = get_db_connection()
+    prod = conn.execute(
+        "SELECT stock, is_available FROM products WHERE name = ?", (product_name,)
+    ).fetchone()
+    conn.close()
+
+    if prod and (prod["is_available"] == 0 or (prod["stock"] is not None and prod["stock"] <= 0)):
+        return jsonify({"status": "error", "message": "Kechirasiz, ushbu mahsulot hozirda tugagan!"}), 400
+
     cart = session.get("cart", [])
     for item in cart:
         if item["name"] == product_name:
+            if prod and prod["stock"] is not None and item["quantity"] >= prod["stock"]:
+                return jsonify({"status": "error", "message": f"Omborda faqat {prod['stock']} ta mahsulot mavjud!"}), 400
             item["quantity"] += 1
             break
     else:
@@ -168,7 +248,11 @@ def add_to_cart():
 
     session["cart"] = cart
     session.modified = True
-    return jsonify({"status": "success", "message": f"{product_name} savatchaga qo‘shildi!"})
+    return jsonify({
+        "status": "success",
+        "message": f"{product_name} savatchaga qo‘shildi!",
+        "items_count": sum(item["quantity"] for item in cart)
+    })
 
 # 🛒 Savatcha
 @app.route("/cart")
@@ -202,7 +286,17 @@ def update_cart():
 
     session["cart"] = cart
     session.modified = True
-    return jsonify({"status": "success"})
+    products_total = sum(item["price"] * item["quantity"] for item in cart)
+    delivery_fee = 10000 if cart else 0
+    total = products_total + delivery_fee
+    return jsonify({
+        "status": "success",
+        "cart": cart,
+        "products_total": products_total,
+        "delivery_fee": delivery_fee,
+        "total": total,
+        "items_count": sum(item["quantity"] for item in cart)
+    })
 
 # ❌ Savatchadan o‘chirish
 @app.route("/remove_from_cart", methods=["POST"])
@@ -213,7 +307,18 @@ def remove_from_cart():
     cart = [item for item in cart if item["name"] != product_name]
     session["cart"] = cart
     session.modified = True
-    return jsonify({"status": "success", "message": f"{product_name} savatchadan olib tashlandi!"})
+    products_total = sum(item["price"] * item["quantity"] for item in cart)
+    delivery_fee = 10000 if cart else 0
+    total = products_total + delivery_fee
+    return jsonify({
+        "status": "success",
+        "message": f"{product_name} savatchadan olib tashlandi!",
+        "cart": cart,
+        "products_total": products_total,
+        "delivery_fee": delivery_fee,
+        "total": total,
+        "items_count": sum(item["quantity"] for item in cart)
+    })
 
 # ✅ Buyurtma berish
 @app.route("/checkout", methods=["GET", "POST"])
@@ -224,32 +329,69 @@ def checkout():
 
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
+    if not user:
+        conn.close()
+        return redirect(url_for("index"))
 
     cart = session.get("cart", [])
+    if not cart:
+        conn.close()
+        return redirect(url_for("cart"))
+
     products_total = sum(item["price"] * item["quantity"] for item in cart)
     delivery_fee = 10000
     total_price = products_total + delivery_fee
 
     if request.method == "POST":
+        if products_total < 100000:
+            conn.close()
+            return render_template(
+                "checkout.html",
+                total=total_price,
+                card_number=PAY_CARD_NUMBER,
+                card_owner=PAY_CARD_OWNER,
+                error=_("❌ Minimal buyurtma summasi 100 000 so‘m bo‘lishi kerak!")
+            ), 400
+
         receipt_file = request.files.get("receipt")
         if not receipt_file or not receipt_file.filename:
             conn.close()
-            return render_template("checkout.html", total=total_price, error=_("❌ To‘lov chekini yuklash majburiy!")), 400
+            return render_template(
+                "checkout.html",
+                total=total_price,
+                card_number=PAY_CARD_NUMBER,
+                card_owner=PAY_CARD_OWNER,
+                error=_("❌ To‘lov chekini yuklash majburiy!")
+            ), 400
 
-        filename = secure_filename(receipt_file.filename)
-        receipt_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        if not allowed_file(receipt_file.filename):
+            conn.close()
+            return render_template(
+                "checkout.html",
+                total=total_price,
+                card_number=PAY_CARD_NUMBER,
+                card_owner=PAY_CARD_OWNER,
+                error=_("❌ Chek faqat rasm formatida bo‘lishi kerak (.jpg, .png, .webp)!")
+            ), 400
+
+        ext = receipt_file.filename.rsplit(".", 1)[1].lower()
+        unique_filename = f"receipt_{uuid.uuid4().hex[:12]}.{ext}"
+        receipt_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
         receipt_file.save(receipt_path)
 
         # 1️⃣ Orders jadvaliga yozamiz
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO orders (tg_id, name, phone, address, total_price, receipt, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'Kutilmoqda', datetime('now'))
-        """, (tg_id, user["name"], user["phone"], user["address"], total_price, filename))
-        order_id = cur.lastrowid   # oxirgi qo‘shilgan order_id
-        conn.commit()
+        order_id = db.add_order(
+            tg_id=tg_id,
+            name=user["name"],
+            phone=user["phone"],
+            address=user["address"],
+            total_price=total_price,
+            receipt=unique_filename,
+            status="Kutilmoqda"
+        )
 
         # 2️⃣ Har bir mahsulotni order_items ga yozamiz
+        cur = conn.cursor()
         for item in cart:
             cur.execute("""
                 INSERT INTO order_items (order_id, product_name, quantity, price)
@@ -275,15 +417,34 @@ def checkout():
             )
 
         try:
-            requests.post(TELEGRAM_API, data={"chat_id": tg_id, "text": message})
+            requests.post(TELEGRAM_API, data={"chat_id": tg_id, "text": message}, timeout=5)
         except Exception as e:
             print("❌ Qabul xabari yuborilmadi:", e)
+
+        # 📣 Adminlarga bildirishnoma yuborish
+        order_info = {
+            "id": order_id,
+            "name": user["name"],
+            "phone": user["phone"],
+            "address": user["address"],
+            "total_price": total_price,
+            "status": "Kutilmoqda"
+        }
+        try:
+            notify_admin(order_info, items=cart, receipt_path=receipt_path)
+        except Exception as ex_admin:
+            print("❌ Admin bildirishnomasida xatolik:", ex_admin)
 
         session.pop("cart", None)
         return redirect(url_for("orders"))
 
     conn.close()
-    return render_template("checkout.html", total=total_price)
+    return render_template(
+        "checkout.html",
+        total=total_price,
+        card_number=PAY_CARD_NUMBER,
+        card_owner=PAY_CARD_OWNER
+    )
 
 # 📝 Buyurtmalar (faqat shu foydalanuvchiga)
 @app.route("/orders")
@@ -302,9 +463,9 @@ def orders():
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        if check_admin_credentials(username, password):
             session["admin_logged_in"] = True
             return redirect(url_for("admin_dashboard"))
         else:
@@ -320,9 +481,69 @@ def admin_logout():
 # ⚙️ Admin Panel
 # =====================
 @app.route("/admin")
+@app.route("/admin/dashboard")
 @login_required
 def admin_dashboard():
-    return redirect(url_for("admin_orders"))
+    conn = get_db_connection()
+
+    # 1. Bugungi sana (Toshkent vaqti)
+    tz = pytz.timezone("Asia/Tashkent")
+    today_str = datetime.now(tz).strftime("%Y-%m-%d")
+
+    # Bugungi buyurtmalar va tushum
+    today_stat = conn.execute("""
+        SELECT COUNT(*) as count, COALESCE(SUM(total_price), 0) as total
+        FROM orders
+        WHERE created_at LIKE ? AND status != 'Bekor qilindi'
+    """, (today_str + "%",)).fetchone()
+
+    # Jami buyurtmalar va tushum
+    all_stat = conn.execute("""
+        SELECT COUNT(*) as count, COALESCE(SUM(total_price), 0) as total
+        FROM orders
+        WHERE status != 'Bekor qilindi'
+    """).fetchone()
+
+    # Kutilayotgan buyurtmalar
+    pending_stat = conn.execute("""
+        SELECT COUNT(*) as count FROM orders WHERE status = 'Kutilmoqda'
+    """).fetchone()
+
+    # Jami mijozlar soni
+    users_stat = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()
+
+    # Jami mahsulotlar soni
+    products_stat = conn.execute("SELECT COUNT(*) as count FROM products").fetchone()
+
+    # Eng ko'p sotilgan mahsulotlar (Top 5)
+    top_products = conn.execute("""
+        SELECT product_name, SUM(quantity) as total_qty, SUM(quantity * price) as total_revenue
+        FROM order_items
+        GROUP BY product_name
+        ORDER BY total_qty DESC
+        LIMIT 5
+    """).fetchall()
+
+    # Oxirgi 5 ta buyurtma
+    recent_orders = conn.execute("""
+        SELECT id, name, phone, total_price, status, created_at
+        FROM orders
+        ORDER BY id DESC
+        LIMIT 5
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin/dashboard.html",
+        today_stat=today_stat,
+        all_stat=all_stat,
+        pending_stat=pending_stat,
+        users_count=users_stat["count"] if users_stat else 0,
+        products_count=products_stat["count"] if products_stat else 0,
+        top_products=top_products,
+        recent_orders=recent_orders
+    )
 
 # 📂 Admin: buyurtmalar
 @app.route("/admin/orders")
@@ -366,8 +587,6 @@ def admin_orders():
 
     return render_template("admin/orders.html", orders=result)
 
-
-
 @app.route("/admin/orders/update/<int:order_id>/<string:new_status>")
 @login_required
 def admin_update_order(order_id, new_status):
@@ -390,30 +609,53 @@ def admin_update_order(order_id, new_status):
     MESSAGES = {
         "uz": {
             "approved": (
-                f"✅ Hurmatli {order['name']}, buyurtmangiz tasdiqlandi!\n\n"
+                f"✅ Hurmatli {order['name']}, #{order['id']} raqamli buyurtmangiz tasdiqlandi!\n\n"
                 f"🚚 Tez orada yetkazib beriladi.\n"
-                f"📦 Jami summa: {order['total_price']} so‘m"
+                f"📦 Jami summa: {int(order['total_price']):,} so‘m".replace(",", " ")
+            ),
+            "delivered": (
+                f"🚚 Hurmatli {order['name']}, #{order['id']} raqamli buyurtmangiz muvaffaqiyatli yetkazib berildi!\n\n"
+                f"Xaridingiz uchun rahmat! 😊"
+            ),
+            "cancelled": (
+                f"❌ Hurmatli {order['name']}, afsuski #{order['id']} raqamli buyurtmangiz bekor qilindi.\n\n"
+                f"Savollaringiz bo‘lsa qo‘llab-quvvatlash xizmatiga murojaat qilishingiz mumkin."
             )
         },
         "ru": {
             "approved": (
-                f"✅ Уважаемый {order['name']}, ваш заказ подтвержден!\n\n"
+                f"✅ Уважаемый {order['name']}, ваш заказ #{order['id']} подтвержден!\n\n"
                 f"🚚 Скоро будет доставлен.\n"
-                f"📦 Общая сумма: {order['total_price']} сум"
+                f"📦 Общая сумма: {int(order['total_price']):,} сум".replace(",", " ")
+            ),
+            "delivered": (
+                f"🚚 Уважаемый {order['name']}, ваш заказ #{order['id']} успешно доставлен!\n\n"
+                f"Спасибо за покупку! 😊"
+            ),
+            "cancelled": (
+                f"❌ Уважаемый {order['name']}, к сожалению, ваш заказ #{order['id']} был отменен.\n\n"
+                f"По всем вопросам обращайтесь в службу поддержки."
             )
         }
     }
 
-    # Faqat "Tasdiqlandi" bo‘lsa xabar yuboramiz
-    if new_status == "Tasdiqlandi" and order["tg_id"]:
-        message = MESSAGES.get(lang, MESSAGES["uz"])["approved"]
+    message = None
+    lang_msgs = MESSAGES.get(lang, MESSAGES["uz"])
+    if new_status == "Tasdiqlandi":
+        message = lang_msgs["approved"]
+    elif new_status == "Bajarildi":
+        message = lang_msgs["delivered"]
+    elif new_status == "Bekor qilindi":
+        message = lang_msgs["cancelled"]
 
+    if message and order["tg_id"]:
         try:
-            requests.post(TELEGRAM_API, data={"chat_id": order["tg_id"], "text": message})
+            requests.post(TELEGRAM_API, data={"chat_id": order["tg_id"], "text": message}, timeout=5)
         except Exception as e:
-            print("❌ Tasdiqlash xabari yuborilmadi:", e)
+            print(f"❌ {new_status} xabari yuborilmadi:", e)
 
-    return redirect(url_for("admin_orders"))
+    redirect_target = request.args.get("next") or url_for("admin_orders")
+    return redirect(redirect_target)
 
 # 📂 Admin: chek ko‘rish
 @app.route("/admin/receipt/<path:filename>")
@@ -433,11 +675,12 @@ def admin_categories():
 @app.route("/admin/categories/add", methods=["POST"])
 @login_required
 def admin_add_category():
-    name = request.form.get("name")
-    if not name:
+    name_uz = request.form.get("name_uz", "").strip()
+    name_ru = request.form.get("name_ru", "").strip() or None
+    if not name_uz:
         return redirect(url_for("admin_categories"))
     conn = get_db_connection()
-    conn.execute("INSERT INTO categories (name) VALUES (?)", (name,))
+    conn.execute("INSERT INTO categories (name_uz, name_ru) VALUES (?, ?)", (name_uz, name_ru))
     conn.commit()
     conn.close()
     return redirect(url_for("admin_categories"))
@@ -461,9 +704,10 @@ def admin_edit_category(category_id):
         abort(404)
 
     if request.method == "POST":
-        new_name = request.form.get("name")
-        if new_name:
-            conn.execute("UPDATE categories SET name=? WHERE id=?", (new_name, category_id))
+        name_uz = request.form.get("name_uz", "").strip()
+        name_ru = request.form.get("name_ru", "").strip() or None
+        if name_uz:
+            conn.execute("UPDATE categories SET name_uz=?, name_ru=? WHERE id=?", (name_uz, name_ru, category_id))
             conn.commit()
         conn.close()
         return redirect(url_for("admin_categories"))
@@ -484,14 +728,15 @@ def admin_edit_product(product_id):
         abort(404)
 
     if request.method == "POST":
-        name = request.form.get("name")
-        price = request.form.get("price")
+        name = request.form.get("name", "").strip()
+        price = request.form.get("price", "0").strip()
         category_id = request.form.get("category_id")
 
         # 📸 Yangi rasm yuklansa
         image_file = request.files.get("image")
-        if image_file and image_file.filename:
-            filename = secure_filename(image_file.filename)
+        if image_file and image_file.filename and allowed_file(image_file.filename):
+            ext = image_file.filename.rsplit(".", 1)[1].lower()
+            filename = f"prod_{uuid.uuid4().hex[:12]}.{ext}"
             save_path = os.path.join(app.config["PRODUCT_FOLDER"], filename)
             image_file.save(save_path)
             image_path = f"/static/products/{filename}"
@@ -548,8 +793,8 @@ def admin_products():
 @app.route("/admin/products/add", methods=["POST"])
 @login_required
 def admin_add_product():
-    name = request.form.get("name")
-    price = request.form.get("price")
+    name = request.form.get("name", "").strip()
+    price = request.form.get("price", "0").strip()
     category_id = request.form.get("category_id")
 
     if not name or not price or not category_id:
@@ -558,8 +803,9 @@ def admin_add_product():
     # 📸 Rasmni yuklash
     image_file = request.files.get("image")
     image_path = None
-    if image_file and image_file.filename:
-        filename = secure_filename(image_file.filename)
+    if image_file and image_file.filename and allowed_file(image_file.filename):
+        ext = image_file.filename.rsplit(".", 1)[1].lower()
+        filename = f"prod_{uuid.uuid4().hex[:12]}.{ext}"
         save_path = os.path.join(app.config["PRODUCT_FOLDER"], filename)
         image_file.save(save_path)
         # DB uchun faqat nisbiy yo‘lni saqlaymiz

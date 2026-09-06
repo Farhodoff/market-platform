@@ -21,6 +21,12 @@
     <div class="checkout-box">
         <h2>🛒 {{ _("Buyurtma to‘lovi") }}</h2>
 
+        {% if error %}
+        <div style="background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; text-align: center; font-weight: 500;">
+            {{ error }}
+        </div>
+        {% endif %}
+
         <!-- Jami summa -->
         <label>{{ _("Jami summa") }}</label>
         <input type="text" class="readonly" value="{{ total }} {{ _('so‘m') }}" readonly>
@@ -30,20 +36,20 @@
 
         <label>{{ _("Karta raqami") }}</label>
         <div style="display:flex; align-items:center;">
-            <input type="text" id="card-number" class="readonly" value="9860 3501 4879 4968" readonly>
+            <input type="text" id="card-number" class="readonly" value="{{ card_number }}" readonly>
             <button type="button" class="copy-btn" onclick="copyCard()">📋 {{ _('Nusxa olish') }}</button>
         </div>
         <small>{{ _("Karta raqamini Payme yoki Click ilovasiga nusxa oling") }}</small>
 
         <label>{{ _("Karta egasi") }}</label>
-        <input type="text" class="readonly" value="YULDOSHEV ZUHRIDDIN" readonly>
+        <input type="text" class="readonly" value="{{ card_owner }}" readonly>
 
         <!-- To‘lov cheki -->
         <form action="{{ url_for('checkout') }}" method="post" enctype="multipart/form-data" id="checkout-form">
             <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
 
             <label>{{ _("To‘lov chekini yuklash *") }}</label>
-            <input type="file" name="receipt" id="receipt-input" required>
+            <input type="file" name="receipt" id="receipt-input" accept="image/*" required>
 
             <button type="submit" id="submit-btn" class="submit-btn" disabled>✅ {{ _("Buyurtmani jo‘natish") }}</button>
         </form>

@@ -27,6 +27,7 @@
         .status.kutilmoqda { background: #f59e0b; }
         .status.tasdiqlandi { background: #3b82f6; }
         .status.bajarildi { background: #16a34a; }
+        .status.bekor_qilindi { background: #ef4444; }
 
         a.back-btn {
             display: block; margin: 20px auto; max-width: 200px;
@@ -70,7 +71,8 @@
                 <span class="status
                     {% if o['status'] == 'Kutilmoqda' %}kutilmoqda
                     {% elif o['status'] == 'Tasdiqlandi' %}tasdiqlandi
-                    {% elif o['status'] == 'Bajarildi' %}bajarildi{% endif %}">
+                    {% elif o['status'] == 'Bajarildi' %}bajarildi
+                    {% elif o['status'] == 'Bekor qilindi' %}bekor_qilindi{% endif %}">
                     {{ _(o['status']) }}
                 </span>
             </div>

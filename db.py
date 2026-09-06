@@ -5,7 +5,9 @@ import pytz
 DB_NAME = "shop.db"   # 📂 Shu nom bilan DB ishlatiladi
 
 def get_connection():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_NAME, timeout=15)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout = 5000;")
     conn.row_factory = sqlite3.Row  # dict-like (row['name']) ishlatish uchun
     return conn
 
@@ -74,9 +76,21 @@ def init_db():
         price INTEGER,
         category_id INTEGER,
         image TEXT,
+        stock INTEGER DEFAULT 100,
+        is_available INTEGER DEFAULT 1,
         FOREIGN KEY(category_id) REFERENCES categories(id)
     )
     """)
+
+    conn.commit()
+
+    # Mavjud jadvalga yangi ustunlar qo'shish (migratsiya)
+    cur.execute("PRAGMA table_info(products)")
+    cols = [r[1] for r in cur.fetchall()]
+    if "stock" not in cols:
+        cur.execute("ALTER TABLE products ADD COLUMN stock INTEGER DEFAULT 100")
+    if "is_available" not in cols:
+        cur.execute("ALTER TABLE products ADD COLUMN is_available INTEGER DEFAULT 1")
 
     conn.commit()
     conn.close()
@@ -120,7 +134,7 @@ def get_all_users():
 # =====================
 # 🧾 Orders
 # =====================
-def add_order(tg_id, name, phone, address, total_price, receipt=None):
+def add_order(tg_id, name, phone, address, total_price, receipt=None, status="Kutilmoqda"):
     # 🇺🇿 Asia/Tashkent vaqtini olish
     tz = pytz.timezone("Asia/Tashkent")
     created_at = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S")
@@ -128,11 +142,13 @@ def add_order(tg_id, name, phone, address, total_price, receipt=None):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO orders (tg_id, name, phone, address, total_price, receipt, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (str(tg_id), name, phone, address, total_price, receipt, created_at))
+        INSERT INTO orders (tg_id, name, phone, address, total_price, receipt, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (str(tg_id), name, phone, address, total_price, receipt, status, created_at))
+    order_id = cur.lastrowid
     conn.commit()
     conn.close()
+    return order_id
 
 def get_orders_by_user(tg_id):
     conn = get_connection()

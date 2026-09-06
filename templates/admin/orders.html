@@ -61,14 +61,31 @@
                 <span class="badge bg-primary">{{ _("Tasdiqlandi") }}</span>
               {% elif o['status'] == 'Bajarildi' %}
                 <span class="badge bg-success">{{ _("Bajarildi") }}</span>
+              {% elif o['status'] == 'Bekor qilindi' %}
+                <span class="badge bg-danger">{{ _("Bekor qilindi") }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ o['status'] }}</span>
               {% endif %}
             </td>
             <td>{{ o['created_at'] }}</td>
             <td class="text-end">
-              <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Tasdiqlandi') }}"
-                 class="btn btn-sm btn-outline-primary">✅ {{ _("Tasdiqlash") }}</a>
-              <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bajarildi') }}"
-                 class="btn btn-sm btn-outline-success">🚚 {{ _("Bajarildi") }}</a>
+              {% if o['status'] == 'Kutilmoqda' %}
+                <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Tasdiqlandi') }}"
+                   class="btn btn-sm btn-outline-primary mb-1">✅ {{ _("Tasdiqlash") }}</a>
+                <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi') }}"
+                   onclick="return confirmOrderCancel(event)"
+                   class="btn btn-sm btn-outline-danger mb-1">❌ {{ _("Bekor qilish") }}</a>
+              {% elif o['status'] == 'Tasdiqlandi' %}
+                <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bajarildi') }}"
+                   class="btn btn-sm btn-outline-success mb-1">🚚 {{ _("Bajarildi") }}</a>
+                <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi') }}"
+                   onclick="return confirmOrderCancel(event)"
+                   class="btn btn-sm btn-outline-danger mb-1">❌ {{ _("Bekor qilish") }}</a>
+              {% elif o['status'] == 'Bajarildi' %}
+                <span class="badge bg-success py-2 px-3">✔️ Yetkazildi</span>
+              {% elif o['status'] == 'Bekor qilindi' %}
+                <span class="badge bg-danger py-2 px-3">❌ Bekor qilingan</span>
+              {% endif %}
             </td>
           </tr>
           {% else %}
@@ -81,4 +98,14 @@
     </div>
   </div>
 </div>
+
+<script>
+function confirmOrderCancel(e) {
+  if (!confirm("{{ _('Haqiqatan ham bu buyurtmani bekor qilmoqchimisiz?') }}")) {
+    if (e && e.preventDefault) e.preventDefault();
+    return false;
+  }
+  return true;
+}
+</script>
 {% endblock %}

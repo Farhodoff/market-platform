@@ -92,15 +92,38 @@
     </style>
 </head>
 <body>
+<div id="toastContainer" class="toast-container"></div>
+
 <div class="container">
-    <h2>🛍 {{ _("Mahsulotlar") }}</h2>
-    <div class="products">
+    <h2>🛍 {% if category %}{{ category['name_uz'] if g.locale == 'uz' else (category['name_ru'] or category['name_uz']) }}{% else %}{{ _("Mahsulotlar") }}{% endif %}</h2>
+
+    <!-- 🔍 Jonli Qidiruv -->
+    <div style="max-width: 450px; margin: 0 auto 20px;">
+        <input type="text" id="searchInput" placeholder="🔍 {{ _('Mahsulotlarni qidirish...') }}"
+               style="width: 100%; padding: 12px 18px; border-radius: 25px; border: 1px solid #d1d5db; font-size: 15px; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05); box-sizing: border-box;"
+               oninput="filterProducts()">
+    </div>
+
+    <div class="products" id="productsGrid">
         {% for p in products %}
-            <div class="product-card">
+            {% set is_out_of_stock = (p['is_available'] == 0 or (p['stock'] is not none and p['stock'] <= 0)) %}
+            <div class="product-card" data-name="{{ p['name']|lower }}">
                 <img src="{{ p['image'] }}" alt="{{ p['name'] }}">
                 <h3>{{ p['name'] }}</h3>
                 <b>{{ "{:,}".format(p['price']|int).replace(",", " ") }} {{ _("so‘m") }}</b><br>
-                <button onclick="addToCart('{{ p['name'] }}', {{ p['price'] }})">➕ {{ _("Savatchaga") }}</button>
+                
+                {% if is_out_of_stock %}
+                    <span style="display:inline-block; margin-top:8px; background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">
+                        ❌ {{ _("Mavjud emas") }}
+                    </span><br>
+                    <button disabled style="background: #9ca3af; cursor: not-allowed; opacity: 0.7;">
+                        {{ _("Tugagan") }}
+                    </button>
+                {% else %}
+                    <button type="button" class="add-cart-btn" data-name="{{ p['name'] }}" data-price="{{ p['price'] }}" onclick="handleProductAddToCart(this)">
+                        ➕ {{ _("Savatchaga") }}
+                    </button>
+                {% endif %}
             </div>
         {% else %}
             <p style="grid-column: 1/-1; text-align:center; color:gray;">
@@ -108,9 +131,63 @@
             </p>
         {% endfor %}
     </div>
+    
+    <p id="noResultMsg" style="display: none; text-align: center; color: gray; margin-top: 30px;">
+        🔍 {{ _("Bunday mahsulot topilmadi") }}
+    </p>
 </div>
 
+<!-- Telegram WebApp JS -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
+function showToast(msg, type = "success") {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerText = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+function filterProducts() {
+    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+    const cards = document.querySelectorAll(".product-card");
+    let visibleCount = 0;
+    cards.forEach(card => {
+        const name = card.getAttribute("data-name") || "";
+        if (name.includes(query)) {
+            card.style.display = "";
+            visibleCount++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+    const noResult = document.getElementById("noResultMsg");
+    if (noResult) {
+        noResult.style.display = visibleCount === 0 ? "block" : "none";
+    }
+}
+
+// Telegram WebApp orqali xavfsiz avtorizatsiya
+if (window.Telegram?.WebApp?.initData) {
+    fetch("/api/auth_telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+    }).catch(() => {});
+}
+
+function handleProductAddToCart(btn) {
+    const name = btn.getAttribute("data-name");
+    const price = parseInt(btn.getAttribute("data-price"), 10);
+    addToCart(name, price);
+}
+
 async function addToCart(name, price) {
     try {
         const res = await fetch("/add_to_cart", {
@@ -120,12 +197,15 @@ async function addToCart(name, price) {
         });
         const data = await res.json();
         if (data.status === "success") {
-            alert("✅ " + data.message);
+            showToast("✅ " + data.message, "success");
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred("success");
+            }
         } else {
-            alert("❌ {{ _('Xatolik yuz berdi') }}");
+            showToast("❌ {{ _('Xatolik yuz berdi') }}", "error");
         }
     } catch (e) {
-        alert("❌ Server bilan aloqa uzildi!");
+        showToast("❌ Server bilan aloqa uzildi!", "error");
     }
 }
 </script>

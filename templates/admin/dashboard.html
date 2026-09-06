@@ -1,0 +1,142 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}📊 {{ _("Dashboard va Statistika") }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Statistika kartalari (KPI) -->
+  <div class="row g-3 mb-4">
+    <!-- Bugungi tushum -->
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 border-start border-primary border-4">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2 fs-7 fw-semibold">💰 {{ _("Bugungi tushum") }}</h6>
+          <h3 class="mb-0 text-primary fw-bold">{{ "{:,}".format(today_stat['total']|int).replace(",", " ") }} <small class="fs-6 text-muted">so‘m</small></h3>
+          <small class="text-muted">{{ today_stat['count'] }} ta buyurtma</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jami tushum -->
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 border-start border-success border-4">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2 fs-7 fw-semibold">📈 {{ _("Jami tushum") }}</h6>
+          <h3 class="mb-0 text-success fw-bold">{{ "{:,}".format(all_stat['total']|int).replace(",", " ") }} <small class="fs-6 text-muted">so‘m</small></h3>
+          <small class="text-muted">{{ all_stat['count'] }} ta jami buyurtma</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kutilayotgan buyurtmalar -->
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 border-start border-warning border-4">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2 fs-7 fw-semibold">⏳ {{ _("Kutilmoqda") }}</h6>
+          <h3 class="mb-0 text-warning fw-bold">{{ pending_stat['count'] }} <small class="fs-6 text-muted">ta</small></h3>
+          <small class="text-muted">Tasdiqlash kutilayotganlar</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jami mijozlar -->
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 border-start border-info border-4">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2 fs-7 fw-semibold">👥 {{ _("Mijozlar") }}</h6>
+          <h3 class="mb-0 text-info fw-bold">{{ users_count }} <small class="fs-6 text-muted">ta</small></h3>
+          <small class="text-muted">{{ products_count }} ta faol mahsulot</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Oxirgi buyurtmalar -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">🕒 {{ _("Oxirgi buyurtmalar") }}</h5>
+            <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline-primary">{{ _("Barchasini ko‘rish") }} ➡️</a>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>{{ _("Mijoz") }}</th>
+                  <th>{{ _("Telefon") }}</th>
+                  <th>{{ _("Summa") }}</th>
+                  <th>{{ _("Status") }}</th>
+                  <th class="text-end">{{ _("Tezkor amal") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for o in recent_orders %}
+                <tr>
+                  <td><strong>#{{ o['id'] }}</strong></td>
+                  <td>{{ o['name'] }}</td>
+                  <td>{{ o['phone'] }}</td>
+                  <td><b>{{ "{:,}".format(o['total_price']|int).replace(",", " ") }} so‘m</b></td>
+                  <td>
+                    {% if o['status'] == 'Kutilmoqda' %}
+                      <span class="badge bg-warning text-dark">{{ _("Kutilmoqda") }}</span>
+                    {% elif o['status'] == 'Tasdiqlandi' %}
+                      <span class="badge bg-primary">{{ _("Tasdiqlandi") }}</span>
+                    {% elif o['status'] == 'Bajarildi' %}
+                      <span class="badge bg-success">{{ _("Bajarildi") }}</span>
+                    {% elif o['status'] == 'Bekor qilindi' %}
+                      <span class="badge bg-danger">{{ _("Bekor qilindi") }}</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ o['status'] }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if o['status'] == 'Kutilmoqda' %}
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Tasdiqlandi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-primary" title="Tasdiqlash">✅</a>
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Rostdan ham bekor qilmoqchimisiz?')" title="Bekor qilish">❌</a>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-3">Hozircha buyurtmalar yo‘q</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Eng xaridorgir mahsulotlar (Top 5) -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title mb-3">🏆 {{ _("Eng ko‘p sotilganlar") }}</h5>
+          {% if top_products %}
+            <ul class="list-group list-group-flush">
+              {% for tp in top_products %}
+              <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <div>
+                  <div class="fw-bold">{{ loop.index }}. {{ tp['product_name'] }}</div>
+                  <small class="text-muted">{{ "{:,}".format(tp['total_revenue']|int).replace(",", " ") }} so‘m tushum</small>
+                </div>
+                <span class="badge bg-primary rounded-pill">{{ tp['total_qty'] }} dona</span>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted text-center py-4">Hali xaridlar mavjud emas</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

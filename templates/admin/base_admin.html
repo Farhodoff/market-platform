@@ -73,6 +73,7 @@
         <a href="{{ url_for('admin_products') }}" class="{% if request.endpoint == 'admin_products' %}active{% endif %}">📦 {{ _("Mahsulotlar") }}</a>
         <a href="{{ url_for('admin_categories') }}" class="{% if request.endpoint == 'admin_categories' %}active{% endif %}">🗂 {{ _("Kategoriyalar") }}</a>
         <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint == 'admin_orders' %}active{% endif %}">🛒 {{ _("Buyurtmalar") }}</a>
+        <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint == 'admin_users' %}active{% endif %}">👥 {{ _("Foydalanuvchilar") }}</a>
         <a href="{{ url_for('admin_logout') }}" class="logout">🚪 {{ _("Chiqish") }}</a>
     </div>
 

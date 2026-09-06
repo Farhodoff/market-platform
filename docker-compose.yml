@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: market_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ./shop.db:/app/shop.db
+      - ./uploads:/app/uploads
+      - ./static/products:/app/static/products
+    command: gunicorn --bind 0.0.0.0:3000 --workers 3 --timeout 60 server:app
+
+  bot:
+    build: .
+    container_name: market_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./shop.db:/app/shop.db
+      - ./uploads:/app/uploads
+    command: python bot.py
+    depends_on:
+      - web
