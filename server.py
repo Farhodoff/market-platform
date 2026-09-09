@@ -870,6 +870,16 @@ def admin_users():
     conn.close()
     return render_template("admin/users.html", users=users)
 
+# 📂 Admin: foydalanuvchini o‘chirish
+@app.route("/admin/users/delete/<int:user_id>")
+@login_required
+def admin_delete_user(user_id):
+    conn = get_db_connection()
+    conn.execute("DELETE FROM users WHERE id=?", (user_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("admin_users"))
+
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
