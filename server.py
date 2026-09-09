@@ -76,6 +76,7 @@ def verify_telegram_init_data(init_data: str) -> dict:
 # 💳 To'lov karta sozlamalari (.env dan)
 PAY_CARD_NUMBER = os.getenv("PAY_CARD_NUMBER", "9860 1201 4178 3197")
 PAY_CARD_OWNER = os.getenv("PAY_CARD_OWNER", "Zuhriddin Yuldoshev")
+PAY_CARD_CLEAN = "".join(filter(str.isdigit, PAY_CARD_NUMBER))
 
 # =====================
 # 🔗 DB ulanish
@@ -502,7 +503,9 @@ def checkout():
                 "checkout.html",
                 user=user,
                 total=total_price,
+                total_amount=int(total_price),
                 card_number=PAY_CARD_NUMBER,
+                card_clean=PAY_CARD_CLEAN,
                 card_owner=PAY_CARD_OWNER,
                 error=_("❌ Telefon raqami va yetkazib berish manzilini kiritish majburiy!")
             ), 400
@@ -513,7 +516,9 @@ def checkout():
                 "checkout.html",
                 user=user,
                 total=total_price,
+                total_amount=int(total_price),
                 card_number=PAY_CARD_NUMBER,
+                card_clean=PAY_CARD_CLEAN,
                 card_owner=PAY_CARD_OWNER,
                 error=_("❌ Minimal buyurtma summasi 100 000 so‘m bo‘lishi kerak!")
             ), 400
@@ -525,7 +530,9 @@ def checkout():
                 "checkout.html",
                 user=user,
                 total=total_price,
+                total_amount=int(total_price),
                 card_number=PAY_CARD_NUMBER,
+                card_clean=PAY_CARD_CLEAN,
                 card_owner=PAY_CARD_OWNER,
                 error=_("❌ To‘lov chekini yuklash majburiy!")
             ), 400
@@ -536,7 +543,9 @@ def checkout():
                 "checkout.html",
                 user=user,
                 total=total_price,
+                total_amount=int(total_price),
                 card_number=PAY_CARD_NUMBER,
+                card_clean=PAY_CARD_CLEAN,
                 card_owner=PAY_CARD_OWNER,
                 error=_("❌ Chek faqat rasm formatida bo‘lishi kerak (.jpg, .png, .webp)!")
             ), 400
@@ -617,7 +626,9 @@ def checkout():
         "checkout.html",
         user=user,
         total=total_price,
+        total_amount=int(total_price),
         card_number=PAY_CARD_NUMBER,
+        card_clean=PAY_CARD_CLEAN,
         card_owner=PAY_CARD_OWNER
     )
 

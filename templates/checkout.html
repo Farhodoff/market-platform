@@ -2,94 +2,451 @@
 <html lang="{{ g.locale }}">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ _("To‘lov") }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 0; }
-        .checkout-box { max-width: 500px; margin: 30px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 20px; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; }
-        .readonly { background: #f3f4f6; }
-        .copy-btn { background: #3b82f6; color: white; border: none; padding: 8px 12px; margin-left: 8px; border-radius: 6px; cursor: pointer; }
-        .copy-btn:hover { background: #2563eb; }
-        button.submit-btn { width: 100%; margin-top: 20px; padding: 12px; background: #22c55e; border: none; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; }
-        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 15px;
+        }
+        .checkout-box {
+            max-width: 520px;
+            margin: 15px auto 40px;
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 11px 14px;
+            margin-top: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="tel"]:focus {
+            border-color: #2563eb;
+        }
+        .readonly {
+            background: #f3f4f6;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        /* 📲 Tezkor to'lov tugmalari */
+        .quick-pay-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 14px 0 20px;
+        }
+        .quick-pay-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 12px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+        .quick-pay-btn:active {
+            transform: scale(0.98);
+        }
+        .btn-click {
+            background: linear-gradient(135deg, #0073ff, #0056cc);
+        }
+        .btn-payme {
+            background: linear-gradient(135deg, #00b0ba, #008c94);
+        }
+
+        /* 💳 Virtual karta dizayni */
+        .virtual-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin: 15px 0 20px;
+            box-shadow: 0 4px 12px rgba(15,23,42,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #94a3b8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .card-chip {
+            width: 34px;
+            height: 24px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .card-number-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 19px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            color: #f8fafc;
+        }
+        .copy-pill-btn {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .copy-pill-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .card-footer .owner {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .card-footer .amount-tag {
+            text-align: right;
+            color: #38bdf8;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        /* 📋 To'lov qadamlari */
+        .payment-steps {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 15px 0 20px;
+            font-size: 13px;
+            color: #166534;
+            line-height: 1.5;
+        }
+        .payment-steps ol {
+            margin: 6px 0 0;
+            padding-left: 18px;
+        }
+        .payment-steps li {
+            margin-bottom: 4px;
+        }
+
+        /* 📷 Chek yuklash va ko'rish */
+        .receipt-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-top: 8px;
+        }
+        .receipt-dropzone:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        .receipt-preview {
+            display: none;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .receipt-preview img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        button.submit-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+            background: #16a34a;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 3px 10px rgba(22,163,74,0.3);
+        }
+        button.submit-btn:hover {
+            background: #15803d;
+        }
+        button.submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
-    <div class="checkout-box">
-        <h2>🛒 {{ _("Buyurtma to‘lovi") }}</h2>
+<div id="toastContainer" class="toast-container"></div>
 
-        {% if error %}
-        <div style="background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; text-align: center; font-weight: 500;">
-            {{ error }}
-        </div>
-        {% endif %}
+<div class="checkout-box">
+    <h2>🛒 {{ _("Buyurtma to‘lovi") }}</h2>
 
-        <!-- Jami summa -->
-        <label>{{ _("Jami summa") }}</label>
-        <input type="text" class="readonly" value="{{ total }} {{ _('so‘m') }}" readonly>
-
-        <!-- Yetkazib berish ma'lumotlari -->
-        <form action="{{ url_for('checkout') }}" method="post" enctype="multipart/form-data" id="checkout-form">
-            <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
-
-            <h3 style="margin-top: 20px; font-size: 17px;">📍 {{ _("Yetkazib berish ma'lumotlari") }}</h3>
-
-            <label>{{ _("Qabul qiluvchi telefon raqami *") }}</label>
-            <input type="text" name="phone" value="{{ user['phone'] if user and user['phone'] else '' }}" placeholder="+998901234567" required>
-
-            <label>{{ _("Yetkazib berish manzili *") }}</label>
-            <input type="text" name="address" value="{{ user['address'] if user and user['address'] else '' }}" placeholder="{{ _('Shahar, ko‘cha, uy raqami, mo‘ljal') }}" required>
-
-            <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" name="save_address" id="save_address" value="1" checked style="width: auto; margin: 0;">
-                <label for="save_address" style="margin: 0; font-weight: normal; font-size: 13px; color: #4b5563; cursor: pointer;">
-                    {{ _("Kelgusi buyurtmalar uchun manzilni yangilab saqlash") }}
-                </label>
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-
-            <!-- To‘lov ma'lumotlari -->
-            <h3 style="font-size: 17px;">💳 {{ _("To‘lov ma'lumotlari") }}</h3>
-
-            <label>{{ _("Karta raqami") }}</label>
-            <div style="display:flex; align-items:center;">
-                <input type="text" id="card-number" class="readonly" value="{{ card_number }}" readonly>
-                <button type="button" class="copy-btn" onclick="copyCard()">📋 {{ _('Nusxa olish') }}</button>
-            </div>
-            <small style="color: #6b7280;">{{ _("Karta raqamini Payme yoki Click ilovasiga nusxa oling") }}</small>
-
-            <label>{{ _("Karta egasi") }}</label>
-            <input type="text" class="readonly" value="{{ card_owner }}" readonly>
-
-            <!-- To‘lov cheki -->
-            <label style="margin-top: 15px;">{{ _("To‘lov chekini yuklash *") }}</label>
-            <input type="file" name="receipt" id="receipt-input" accept="image/*" required>
-
-            <button type="submit" id="submit-btn" class="submit-btn" disabled>✅ {{ _("Buyurtmani jo‘natish") }}</button>
-        </form>
+    {% if error %}
+    <div style="background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 18px; font-size: 14px; text-align: center; font-weight: 600;">
+        {{ error }}
     </div>
+    {% endif %}
 
-    <script>
-        // Copy karta raqami
-        function copyCard() {
-            const cardInput = document.getElementById("card-number");
-            cardInput.select();
-            cardInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(cardInput.value);
-            alert("💳 {{ _('Karta raqami nusxalandi!') }}");
-        }
+    <form action="{{ url_for('checkout') }}" method="post" enctype="multipart/form-data" id="checkout-form">
+        <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
 
-        // Chek majburiy
-        const receiptInput = document.getElementById("receipt-input");
-        const submitBtn = document.getElementById("submit-btn");
+        <!-- 1. Yetkazib berish ma'lumotlari -->
+        <div class="section-title">📍 {{ _("Yetkazib berish ma'lumotlari") }}</div>
 
-        receiptInput.addEventListener("change", function() {
-            submitBtn.disabled = !this.files.length;
+        <label>{{ _("Qabul qiluvchi telefon raqami *") }}</label>
+        <input type="tel" name="phone" value="{{ user['phone'] if user and user['phone'] else '' }}" placeholder="+998901234567" required>
+
+        <label>{{ _("Yetkazib berish manzili *") }}</label>
+        <input type="text" name="address" value="{{ user['address'] if user and user['address'] else '' }}" placeholder="{{ _('Shahar, ko‘cha, uy raqami, mo‘ljal') }}" required>
+
+        <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" name="save_address" id="save_address" value="1" checked style="width: auto; margin: 0; cursor: pointer;">
+            <label for="save_address" style="margin: 0; font-weight: normal; font-size: 13px; color: #4b5563; cursor: pointer;">
+                {{ _("Kelgusi buyurtmalar uchun manzilni yangilab saqlash") }}
+            </label>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 22px 0 16px;">
+
+        <!-- 2. To'lov ma'lumotlari & Tezkor tugmalar -->
+        <div class="section-title">💳 {{ _("To‘lov usuli") }}</div>
+
+        <div style="font-size: 13px; color: #4b5563; margin-bottom: 8px;">
+            {{ "Ilovangizni tanlang va to‘lovni 1 bosishda bajaring:" if g.locale == 'uz' else "Выберите приложение для быстрой оплаты:" }}
+        </div>
+
+        <!-- 📲 Click va Payme Tezkor Tugmalari -->
+        <div class="quick-pay-grid">
+            <button type="button" class="quick-pay-btn btn-click" onclick="payViaClick()">
+                <span>🔵</span> Click Up
+            </button>
+            <button type="button" class="quick-pay-btn btn-payme" onclick="payViaPayme()">
+                <span>🟢</span> Payme
+            </button>
+        </div>
+
+        <!-- 💳 Virtual Karta -->
+        <div class="virtual-card">
+            <div class="card-header">
+                <span>{{ "To‘lov kartasi" if g.locale == 'uz' else "Карта для оплаты" }}</span>
+                <span class="card-chip"></span>
+            </div>
+            <div class="card-number-row">
+                <span id="cardDisplayNumber">{{ card_number }}</span>
+                <button type="button" class="copy-pill-btn" onclick="copyText('{{ card_clean }}', '{{ _('Karta raqami nusxalandi!') }}')">
+                    📋 {{ _("Nusxa olish") }}
+                </button>
+            </div>
+            <div class="card-footer">
+                <div>
+                    <div style="font-size: 11px; opacity: 0.8;">{{ _("Karta egasi") }}</div>
+                    <div class="owner">{{ card_owner }}</div>
+                </div>
+                <div class="amount-tag">
+                    <div style="font-size: 11px; color: #94a3b8;">{{ _("Jami summa") }}</div>
+                    <div>{{ "{:,}".format(total_amount).replace(",", " ") }} {{ _("so‘m") }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💡 To'lov tartibi -->
+        <div class="payment-steps">
+            <b>ℹ️ {{ "To‘lov bo‘yicha qo‘llanma:" if g.locale == 'uz' else "Инструкция по оплате:" }}</b>
+            <ol>
+                <li>{{ "Yuqoridagi Click yoki Payme tugmasini bosing (yoki karta raqamini nusxalang)." if g.locale == 'uz' else "Нажмите кнопку Click или Payme выше (или скопируйте номер карты)." }}</li>
+                <li>{{ "Ilovada to‘lovni amalga oshiring." if g.locale == 'uz' else "Совершите перевод в приложении." }}</li>
+                <li>{{ "To‘lov chekini rasmga olib (skrinshot) pastdagi maydonga yuklang." if g.locale == 'uz' else "Сделайте скриншот чека и загрузите его в поле ниже." }}</li>
+            </ol>
+        </div>
+
+        <!-- 3. To'lov chekini yuklash -->
+        <div class="section-title">🧾 {{ _("To‘lov chekini yuklash *") }}</div>
+
+        <div class="receipt-dropzone" onclick="document.getElementById('receipt-input').click()">
+            <div id="dropzoneText">
+                📷 <b>{{ "Chek rasmini tanlang" if g.locale == 'uz' else "Выберите фото чека" }}</b>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">JPG, PNG, WEBP (maks. 16 MB)</div>
+            </div>
+            <input type="file" name="receipt" id="receipt-input" accept="image/*" style="display: none;" required onchange="handleReceiptSelect(event)">
+            
+            <div id="receiptPreviewContainer" class="receipt-preview">
+                <img id="receiptPreviewImg" src="" alt="Chek rasmi">
+                <div style="margin-top: 6px; font-size: 12px; color: #16a34a; font-weight: 600;">
+                    ✅ {{ "Chek yuklandi. O‘zgartirish uchun qayta bosing." if g.locale == 'uz' else "Чек прикреплен. Нажмите снова, чтобы изменить." }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Buyurtmani yuborish -->
+        <button type="submit" id="submit-btn" class="submit-btn" disabled>
+            ✅ {{ _("Buyurtmani jo‘natish") }}
+        </button>
+    </form>
+</div>
+
+<!-- Telegram WebApp JS -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+const cardClean = "{{ card_clean }}";
+const totalAmount = "{{ total_amount }}";
+
+// 🔵 Click Up orqali to'lash
+function payViaClick() {
+    const clickUrl = `https://my.click.uz/clickp2p?card=${cardClean}&amount=${totalAmount}`;
+    if (window.Telegram?.WebApp?.openLink) {
+        window.Telegram.WebApp.openLink(clickUrl);
+    } else {
+        window.open(clickUrl, "_blank");
+    }
+}
+
+// 🟢 Payme orqali to'lash
+function payViaPayme() {
+    const paymeUrl = `https://payme.uz/fallback/p2p/${cardClean}`;
+    if (window.Telegram?.WebApp?.openLink) {
+        window.Telegram.WebApp.openLink(paymeUrl);
+    } else {
+        window.open(paymeUrl, "_blank");
+    }
+}
+
+// 📋 Matn nusxalash
+function copyText(text, successMsg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("📋 " + successMsg);
+        }).catch(() => {
+            fallbackCopy(text, successMsg);
         });
-    </script>
+    } else {
+        fallbackCopy(text, successMsg);
+    }
+}
+
+function fallbackCopy(text, successMsg) {
+    const tempInput = document.createElement("input");
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    showToast("📋 " + successMsg);
+}
+
+function showToast(msg) {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = "toast success";
+    toast.innerText = msg;
+    container.appendChild(toast);
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred("success");
+    }
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// 📷 Chek rasm tanlanganda ko'rsatish
+function handleReceiptSelect(e) {
+    const file = e.target.files[0];
+    const submitBtn = document.getElementById("submit-btn");
+    const previewContainer = document.getElementById("receiptPreviewContainer");
+    const previewImg = document.getElementById("receiptPreviewImg");
+    const dropzoneText = document.getElementById("dropzoneText");
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            previewImg.src = evt.target.result;
+            previewContainer.style.display = "block";
+            dropzoneText.style.display = "none";
+            submitBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.style.display = "none";
+        dropzoneText.style.display = "block";
+        submitBtn.disabled = true;
+    }
+}
+
+// Telegram WebApp Init
+if (window.Telegram?.WebApp?.initData) {
+    fetch("/api/auth_telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: window.Telegram.WebApp.initData })
+    }).catch(() => {});
+}
+</script>
 </body>
 </html>
