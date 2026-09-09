@@ -77,13 +77,14 @@
               <a href="{{ url_for('admin_edit_product', product_id=p['id']) }}"
                  class="btn btn-sm btn-outline-warning">✏️ {{ _("Tahrirlash") }}</a>
               <a href="{{ url_for('admin_delete_product', product_id=p['id']) }}"
-                 onclick="return confirm('🗑 {{ _("O‘chirishni xohlaysizmi?") }}')"
+                 data-confirm="{{ _('O‘chirishni xohlaysizmi?') }}"
+                 onclick="return confirm(this.getAttribute('data-confirm'))"
                  class="btn btn-sm btn-outline-danger">🗑 {{ _("O‘chirish") }}</a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="6" class="text-center text-muted">🚀 {{ _("Hali mahsulot qo‘shilmagan") }}</td>
+            <td colspan="7" class="text-center text-muted">🚀 {{ _("Hali mahsulot qo‘shilmagan") }}</td>
           </tr>
         {% endfor %}
         </tbody>

@@ -34,7 +34,8 @@
                                class="btn btn-sm btn-outline-secondary">✏️</a>
                             <a href="{{ url_for('admin_delete_category', category_id=category['id']) }}"
                                class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('{{ _("Rostdan o‘chirmoqchimisiz?") }}')">🗑</a>
+                               data-confirm="{{ _('Rostdan o‘chirmoqchimisiz?') }}"
+                               onclick="return confirm(this.getAttribute('data-confirm'))">🗑</a>
                         </td>
                     </tr>
                 {% else %}

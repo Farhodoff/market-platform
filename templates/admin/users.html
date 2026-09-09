@@ -36,7 +36,8 @@
             </td>
             <td class="text-end">
               <a href="{{ url_for('admin_delete_user', user_id=user['id']) }}"
-                 onclick="return confirm('❌ {{ _("Rostdan ham foydalanuvchini o‘chirmoqchimisiz?") }}')"
+                 data-confirm="{{ _('Rostdan ham foydalanuvchini o‘chirmoqchimisiz?') }}"
+                 onclick="return confirm(this.getAttribute('data-confirm'))"
                  class="btn btn-sm btn-outline-danger">🗑 {{ _("O‘chirish") }}</a>
             </td>
           </tr>
