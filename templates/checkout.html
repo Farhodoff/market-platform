@@ -31,24 +31,42 @@
         <label>{{ _("Jami summa") }}</label>
         <input type="text" class="readonly" value="{{ total }} {{ _('so‘m') }}" readonly>
 
-        <!-- To‘lov ma'lumotlari -->
-        <h3>💳 {{ _("To‘lov ma'lumotlari") }}</h3>
-
-        <label>{{ _("Karta raqami") }}</label>
-        <div style="display:flex; align-items:center;">
-            <input type="text" id="card-number" class="readonly" value="{{ card_number }}" readonly>
-            <button type="button" class="copy-btn" onclick="copyCard()">📋 {{ _('Nusxa olish') }}</button>
-        </div>
-        <small>{{ _("Karta raqamini Payme yoki Click ilovasiga nusxa oling") }}</small>
-
-        <label>{{ _("Karta egasi") }}</label>
-        <input type="text" class="readonly" value="{{ card_owner }}" readonly>
-
-        <!-- To‘lov cheki -->
+        <!-- Yetkazib berish ma'lumotlari -->
         <form action="{{ url_for('checkout') }}" method="post" enctype="multipart/form-data" id="checkout-form">
             <input type="hidden" name="tg_id" value="{{ session.get('tg_id') }}">
 
-            <label>{{ _("To‘lov chekini yuklash *") }}</label>
+            <h3 style="margin-top: 20px; font-size: 17px;">📍 {{ _("Yetkazib berish ma'lumotlari") }}</h3>
+
+            <label>{{ _("Qabul qiluvchi telefon raqami *") }}</label>
+            <input type="text" name="phone" value="{{ user['phone'] if user and user['phone'] else '' }}" placeholder="+998901234567" required>
+
+            <label>{{ _("Yetkazib berish manzili *") }}</label>
+            <input type="text" name="address" value="{{ user['address'] if user and user['address'] else '' }}" placeholder="{{ _('Shahar, ko‘cha, uy raqami, mo‘ljal') }}" required>
+
+            <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" name="save_address" id="save_address" value="1" checked style="width: auto; margin: 0;">
+                <label for="save_address" style="margin: 0; font-weight: normal; font-size: 13px; color: #4b5563; cursor: pointer;">
+                    {{ _("Kelgusi buyurtmalar uchun manzilni yangilab saqlash") }}
+                </label>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+
+            <!-- To‘lov ma'lumotlari -->
+            <h3 style="font-size: 17px;">💳 {{ _("To‘lov ma'lumotlari") }}</h3>
+
+            <label>{{ _("Karta raqami") }}</label>
+            <div style="display:flex; align-items:center;">
+                <input type="text" id="card-number" class="readonly" value="{{ card_number }}" readonly>
+                <button type="button" class="copy-btn" onclick="copyCard()">📋 {{ _('Nusxa olish') }}</button>
+            </div>
+            <small style="color: #6b7280;">{{ _("Karta raqamini Payme yoki Click ilovasiga nusxa oling") }}</small>
+
+            <label>{{ _("Karta egasi") }}</label>
+            <input type="text" class="readonly" value="{{ card_owner }}" readonly>
+
+            <!-- To‘lov cheki -->
+            <label style="margin-top: 15px;">{{ _("To‘lov chekini yuklash *") }}</label>
             <input type="file" name="receipt" id="receipt-input" accept="image/*" required>
 
             <button type="submit" id="submit-btn" class="submit-btn" disabled>✅ {{ _("Buyurtmani jo‘natish") }}</button>

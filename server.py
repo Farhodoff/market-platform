@@ -370,10 +370,25 @@ def checkout():
         )
 
     if request.method == "POST":
+        delivery_phone = request.form.get("phone", "").strip() or (user["phone"] if user else "")
+        delivery_address = request.form.get("address", "").strip() or (user["address"] if user else "")
+
+        if not delivery_phone or not delivery_address:
+            conn.close()
+            return render_template(
+                "checkout.html",
+                user=user,
+                total=total_price,
+                card_number=PAY_CARD_NUMBER,
+                card_owner=PAY_CARD_OWNER,
+                error=_("❌ Telefon raqami va yetkazib berish manzilini kiritish majburiy!")
+            ), 400
+
         if products_total < 100000:
             conn.close()
             return render_template(
                 "checkout.html",
+                user=user,
                 total=total_price,
                 card_number=PAY_CARD_NUMBER,
                 card_owner=PAY_CARD_OWNER,
@@ -385,6 +400,7 @@ def checkout():
             conn.close()
             return render_template(
                 "checkout.html",
+                user=user,
                 total=total_price,
                 card_number=PAY_CARD_NUMBER,
                 card_owner=PAY_CARD_OWNER,
@@ -395,11 +411,17 @@ def checkout():
             conn.close()
             return render_template(
                 "checkout.html",
+                user=user,
                 total=total_price,
                 card_number=PAY_CARD_NUMBER,
                 card_owner=PAY_CARD_OWNER,
                 error=_("❌ Chek faqat rasm formatida bo‘lishi kerak (.jpg, .png, .webp)!")
             ), 400
+
+        # Foydalanuvchi profilini yangilash (agar belgilangan bo'lsa)
+        if request.form.get("save_address"):
+            conn.execute("UPDATE users SET phone=?, address=? WHERE tg_id=?", (delivery_phone, delivery_address, tg_id))
+            conn.commit()
 
         ext = receipt_file.filename.rsplit(".", 1)[1].lower()
         unique_filename = f"receipt_{uuid.uuid4().hex[:12]}.{ext}"
@@ -410,8 +432,8 @@ def checkout():
         order_id = db.add_order(
             tg_id=tg_id,
             name=user["name"],
-            phone=user["phone"],
-            address=user["address"],
+            phone=delivery_phone,
+            address=delivery_address,
             total_price=total_price,
             receipt=unique_filename,
             status="Kutilmoqda"
@@ -434,13 +456,15 @@ def checkout():
             message = (
                 f"🛒 Уважаемый {user['name']}, ваш заказ принят!\n\n"
                 f"📦 Общая сумма: {total_price} сум\n"
-                f"📍 Адрес: {user['address']}"
+                f"📍 Адрес доставки: {delivery_address}\n"
+                f"📞 Телефон: {delivery_phone}"
             )
         else:
             message = (
                 f"🛒 Hurmatli {user['name']}, buyurtmangiz qabul qilindi!\n\n"
                 f"📦 Jami summa: {total_price} so‘m\n"
-                f"📍 Manzil: {user['address']}"
+                f"📍 Yetkazish manzili: {delivery_address}\n"
+                f"📞 Telefon: {delivery_phone}"
             )
 
         try:
@@ -452,8 +476,8 @@ def checkout():
         order_info = {
             "id": order_id,
             "name": user["name"],
-            "phone": user["phone"],
-            "address": user["address"],
+            "phone": delivery_phone,
+            "address": delivery_address,
             "total_price": total_price,
             "status": "Kutilmoqda"
         }
@@ -468,6 +492,7 @@ def checkout():
     conn.close()
     return render_template(
         "checkout.html",
+        user=user,
         total=total_price,
         card_number=PAY_CARD_NUMBER,
         card_owner=PAY_CARD_OWNER
