@@ -9,6 +9,9 @@ from telegram.ext import (
 )
 import db
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # States
 ASK_LANG, ASK_NAME, ASK_PHONE, ASK_ADDRESS = range(4)
