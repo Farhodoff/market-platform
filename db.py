@@ -92,6 +92,8 @@ def init_db():
     if "is_available" not in cols:
         cur.execute("ALTER TABLE products ADD COLUMN is_available INTEGER DEFAULT 1")
 
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id)")
+
     conn.commit()
     conn.close()
 

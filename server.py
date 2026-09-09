@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_from_directory, abort, g
-import sqlite3, os, requests, uuid, hmac, hashlib, urllib.parse, json
+import sqlite3, os, requests, uuid, hmac, hashlib, urllib.parse, json, math
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
@@ -209,16 +209,139 @@ def index():
 
     return render_template("index.html", categories=result)
 
+def get_pagination_window(page, total_pages):
+    if total_pages <= 7:
+        return list(range(1, total_pages + 1))
+    pages = set([1, total_pages, page, max(1, page - 1), min(total_pages, page + 1)])
+    result = []
+    prev = 0
+    for p in sorted(pages):
+        if prev and p - prev > 1:
+            result.append(None)
+        result.append(p)
+        prev = p
+    return result
+
 @app.route("/products/<int:category_id>")
 def products(category_id):
+    page = request.args.get("page", 1, type=int)
+    if page < 1:
+        page = 1
+    per_page = 16
+    q = request.args.get("q", "").strip()
+
     conn = get_db_connection()
-    products_rows = conn.execute(
-        "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available FROM products WHERE category_id = ?",
-        (category_id,)
-    ).fetchall()
     category = conn.execute("SELECT id, name_uz, name_ru FROM categories WHERE id = ?", (category_id,)).fetchone()
+
+    if q:
+        search_pattern = f"%{q.lower()}%"
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM products WHERE category_id = ? AND LOWER(name) LIKE ?",
+            (category_id, search_pattern)
+        ).fetchone()
+        total_count = count_row[0] if count_row else 0
+        total_pages = max(1, math.ceil(total_count / per_page))
+        if page > total_pages and total_count > 0:
+            page = total_pages
+        offset = (page - 1) * per_page
+
+        products_rows = conn.execute(
+            "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available "
+            "FROM products WHERE category_id = ? AND LOWER(name) LIKE ? ORDER BY id ASC LIMIT ? OFFSET ?",
+            (category_id, search_pattern, per_page, offset)
+        ).fetchall()
+    else:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM products WHERE category_id = ?",
+            (category_id,)
+        ).fetchone()
+        total_count = count_row[0] if count_row else 0
+        total_pages = max(1, math.ceil(total_count / per_page))
+        if page > total_pages and total_count > 0:
+            page = total_pages
+        offset = (page - 1) * per_page
+
+        products_rows = conn.execute(
+            "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available "
+            "FROM products WHERE category_id = ? ORDER BY id ASC LIMIT ? OFFSET ?",
+            (category_id, per_page, offset)
+        ).fetchall()
+
     conn.close()
-    return render_template("products.html", products=products_rows, category=category)
+    page_window = get_pagination_window(page, total_pages)
+
+    return render_template(
+        "products.html",
+        products=products_rows,
+        category=category,
+        page=page,
+        total_pages=total_pages,
+        total_count=total_count,
+        per_page=per_page,
+        page_window=page_window,
+        q=q
+    )
+
+@app.route("/api/products/<int:category_id>")
+def api_products(category_id):
+    page = request.args.get("page", 1, type=int)
+    if page < 1:
+        page = 1
+    per_page = request.args.get("per_page", 16, type=int)
+    if per_page <= 0 or per_page > 50:
+        per_page = 16
+    q = request.args.get("q", "").strip()
+
+    conn = get_db_connection()
+    if q:
+        search_pattern = f"%{q.lower()}%"
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM products WHERE category_id = ? AND LOWER(name) LIKE ?",
+            (category_id, search_pattern)
+        ).fetchone()
+        total_count = count_row[0] if count_row else 0
+        total_pages = max(1, math.ceil(total_count / per_page))
+        offset = (page - 1) * per_page
+
+        rows = conn.execute(
+            "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available "
+            "FROM products WHERE category_id = ? AND LOWER(name) LIKE ? ORDER BY id ASC LIMIT ? OFFSET ?",
+            (category_id, search_pattern, per_page, offset)
+        ).fetchall()
+    else:
+        count_row = conn.execute(
+            "SELECT COUNT(*) FROM products WHERE category_id = ?",
+            (category_id,)
+        ).fetchone()
+        total_count = count_row[0] if count_row else 0
+        total_pages = max(1, math.ceil(total_count / per_page))
+        offset = (page - 1) * per_page
+
+        rows = conn.execute(
+            "SELECT id, name, price, image, COALESCE(stock, 100) as stock, COALESCE(is_available, 1) as is_available "
+            "FROM products WHERE category_id = ? ORDER BY id ASC LIMIT ? OFFSET ?",
+            (category_id, per_page, offset)
+        ).fetchall()
+    conn.close()
+
+    items = []
+    for r in rows:
+        items.append({
+            "id": r["id"],
+            "name": r["name"],
+            "price": r["price"],
+            "image": r["image"],
+            "stock": r["stock"],
+            "is_available": r["is_available"]
+        })
+
+    return jsonify({
+        "products": items,
+        "page": page,
+        "total_pages": total_pages,
+        "total_count": total_count,
+        "has_more": page < total_pages
+    })
 
 # 🛒 Savatchaga qo‘shish (AJAX)
 @app.route("/add_to_cart", methods=["POST"])
