@@ -107,7 +107,11 @@ babel = Babel(app, locale_selector=select_locale)
 def capture_tg_id():
     tg_id = request.args.get("tg_id")
     if tg_id:
-        session["tg_id"] = tg_id
+        session["tg_id"] = str(tg_id)
+    elif not session.get("tg_id") and (app.debug or request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
+        default_tg_id = os.getenv("ADMIN_CHAT_ID", "6756073816")
+        if default_tg_id:
+            session["tg_id"] = str(default_tg_id)
 
 @app.before_request
 def set_global_locale():
@@ -323,24 +327,47 @@ def remove_from_cart():
 # ✅ Buyurtma berish
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
-    tg_id = session.get("tg_id")
-    if not tg_id:
-        return redirect(url_for("index"))
-
-    conn = get_db_connection()
-    user = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
-    if not user:
-        conn.close()
-        return redirect(url_for("index"))
+    tg_id = session.get("tg_id") or request.args.get("tg_id")
+    if not tg_id and (app.debug or request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
+        tg_id = os.getenv("ADMIN_CHAT_ID", "6756073816")
+        if tg_id:
+            session["tg_id"] = str(tg_id)
 
     cart = session.get("cart", [])
     if not cart:
-        conn.close()
         return redirect(url_for("cart"))
 
     products_total = sum(item["price"] * item["quantity"] for item in cart)
     delivery_fee = 10000
     total_price = products_total + delivery_fee
+
+    if not tg_id:
+        return render_template(
+            "cart.html",
+            cart=cart,
+            products_total=products_total,
+            delivery_fee=delivery_fee,
+            total=total_price,
+            error=_("⚠️ Buyurtma berish uchun avval Telegram botimizda ro‘yxatdan o‘tishingiz kerak!")
+        )
+
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
+    if not user and (app.debug or request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
+        # Lokal testda agar user topilmasa, test user yaratib olamiz
+        db.add_user(tg_id, "Test Foydalanuvchi", phone="+998901234567", address="Toshkent shahri", lang="uz")
+        user = conn.execute("SELECT * FROM users WHERE tg_id=?", (tg_id,)).fetchone()
+
+    if not user:
+        conn.close()
+        return render_template(
+            "cart.html",
+            cart=cart,
+            products_total=products_total,
+            delivery_fee=delivery_fee,
+            total=total_price,
+            error=_("⚠️ Foydalanuvchi ma'lumotlari topilmadi. Iltimos, Telegram botimizda /start bosing!")
+        )
 
     if request.method == "POST":
         if products_total < 100000:
@@ -450,6 +477,11 @@ def checkout():
 @app.route("/orders")
 def orders():
     tg_id = request.args.get("tg_id") or session.get("tg_id")
+    if not tg_id and (app.debug or request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
+        tg_id = os.getenv("ADMIN_CHAT_ID", "6756073816")
+        if tg_id:
+            session["tg_id"] = str(tg_id)
+
     if not tg_id:
         return redirect(url_for("index"))
 
