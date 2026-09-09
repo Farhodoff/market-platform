@@ -190,7 +190,7 @@ def login_required(f):
 @app.route("/")
 def index():
     conn = get_db_connection()
-    categories = conn.execute("SELECT id, name_uz, name_ru FROM categories").fetchall()
+    categories = conn.execute("SELECT id, name_uz, name_ru FROM categories ORDER BY id ASC").fetchall()
     conn.close()
 
     # Foydalanuvchining tilini olish (agar login bo'lmagan bo'lsa default 'uz')
@@ -721,6 +721,7 @@ def admin_add_category():
 @login_required
 def admin_delete_category(category_id):
     conn = get_db_connection()
+    conn.execute("DELETE FROM products WHERE category_id=?", (category_id,))
     conn.execute("DELETE FROM categories WHERE id=?", (category_id,))
     conn.commit()
     conn.close()
@@ -792,13 +793,13 @@ def admin_edit_product(product_id):
 def admin_products():
     conn = get_db_connection()
 
-    # 🛒 Barcha mahsulotlar
+    # 🛒 Barcha mahsulotlar (ketma-ketlikda)
     products = conn.execute("""
-        SELECT p.id, p.name, p.price, p.image,
+        SELECT p.id, p.name, p.price, p.image, COALESCE(p.stock, 100) as stock,
                c.name_uz, c.name_ru
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
-        ORDER BY p.id DESC
+        ORDER BY p.id ASC
     """).fetchall()
 
     # 📂 Barcha kategoriyalarni olish (dropdown uchun)
@@ -814,6 +815,7 @@ def admin_products():
             "name": p["name"],
             "price": p["price"],
             "image": p["image"],
+            "stock": p["stock"],
             "category_name": p["name_uz"] or p["name_ru"] or "🚫"
         })
 
@@ -828,6 +830,12 @@ def admin_add_product():
     name = request.form.get("name", "").strip()
     price = request.form.get("price", "0").strip()
     category_id = request.form.get("category_id")
+    stock_raw = request.form.get("stock", "100").strip()
+
+    try:
+        stock = int(stock_raw)
+    except ValueError:
+        stock = 100
 
     if not name or not price or not category_id:
         return redirect(url_for("admin_products"))
@@ -845,8 +853,8 @@ def admin_add_product():
 
     conn = get_db_connection()
     conn.execute(
-        "INSERT INTO products (name, price, image, category_id) VALUES (?, ?, ?, ?)",
-        (name, price, image_path, category_id)
+        "INSERT INTO products (name, price, image, category_id, stock, is_available) VALUES (?, ?, ?, ?, ?, ?)",
+        (name, price, image_path, category_id, stock, 1 if stock > 0 else 0)
     )
     conn.commit()
     conn.close()
@@ -861,12 +869,12 @@ def admin_delete_product(product_id):
     conn.close()
     return redirect(url_for("admin_products"))
 
-# 📂 Admin: foydalanuvchilar
+# 📂 Admin: foydalanuvchilar (ketma-ketlikda)
 @app.route("/admin/users")
 @login_required
 def admin_users():
     conn = get_db_connection()
-    users = conn.execute("SELECT * FROM users ORDER BY id DESC").fetchall()
+    users = conn.execute("SELECT * FROM users ORDER BY id ASC").fetchall()
     conn.close()
     return render_template("admin/users.html", users=users)
 

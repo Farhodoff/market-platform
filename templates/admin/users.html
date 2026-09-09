@@ -10,18 +10,18 @@
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th>ID</th>
-            <th>{{ _("Ism") }}</th>
-            <th>{{ _("Telefon") }}</th>
-            <th>{{ _("Manzil") }}</th>
-            <th class="text-end">{{ _("Amallar") }}</th>
+            <th scope="col">№</th>
+            <th scope="col">{{ _("Ism") }}</th>
+            <th scope="col">{{ _("Telefon") }}</th>
+            <th scope="col">{{ _("Manzil") }}</th>
+            <th scope="col" class="text-end">{{ _("Amallar") }}</th>
           </tr>
         </thead>
         <tbody>
         {% for user in users %}
           <tr>
-            <td>#{{ user['id'] }}</td>
-            <td>{{ user['name'] }}</td>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ user['name'] }}</strong></td>
             <td>{{ user['phone'] or '—' }}</td>
             <td>
               {% if user['lat'] and user['lon'] %}

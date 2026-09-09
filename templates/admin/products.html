@@ -7,21 +7,24 @@
     <h5 class="card-title mb-3">➕ {{ _("Yangi Mahsulot Qo‘shish") }}</h5>
     <form action="{{ url_for('admin_add_product') }}" method="POST" enctype="multipart/form-data">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <input type="text" name="name" class="form-control" placeholder="📦 {{ _('Mahsulot nomi') }}" required>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <input type="number" name="price" class="form-control" placeholder="💰 {{ _('Narxi (so‘m)') }}" required>
+        </div>
+        <div class="col-md-2">
+          <input type="number" name="stock" class="form-control" placeholder="🔢 {{ _('Qoldiq (dona)') }}" value="100" min="0" required>
         </div>
         <div class="col-md-3">
          <select name="category_id" class="form-select" required>
-    <option value="">{{ _("Kategoriya tanlang") }}</option>
-    {% for c in categories %}
-        <option value="{{ c['id'] }}">
-            {{ c['name_uz'] }} {% if c['name_ru'] %}/ {{ c['name_ru'] }}{% endif %}
-        </option>
-    {% endfor %}
-</select>
+            <option value="">{{ _("Kategoriya tanlang") }}</option>
+            {% for c in categories %}
+                <option value="{{ c['id'] }}">
+                    {{ c['name_uz'] }} {% if c['name_ru'] %}/ {{ c['name_ru'] }}{% endif %}
+                </option>
+            {% endfor %}
+         </select>
         </div>
         <div class="col-md-2">
           <input type="file" name="image" class="form-control" accept="image/*">
@@ -41,10 +44,11 @@
       <table class="table table-hover align-middle">
         <thead class="table-light">
           <tr>
-            <th scope="col">ID</th>
+            <th scope="col">№</th>
             <th scope="col">{{ _("Rasm") }}</th>
             <th scope="col">{{ _("Nomi") }}</th>
             <th scope="col">{{ _("Narxi") }}</th>
+            <th scope="col">{{ _("Qoldiq") }}</th>
             <th scope="col">{{ _("Kategoriya") }}</th>
             <th scope="col" class="text-end">{{ _("Amallar") }}</th>
           </tr>
@@ -52,7 +56,7 @@
         <tbody>
         {% for p in products %}
           <tr>
-            <td>#{{ p['id'] }}</td>
+            <td>{{ loop.index }}</td>
             <td>
               {% if p['image'] %}
                 <img src="{{ p['image'] }}" alt="img" class="rounded"
@@ -61,9 +65,14 @@
                 <span class="text-muted">—</span>
               {% endif %}
             </td>
-            <td>{{ p['name'] }}</td>
-            <td><strong>{{ "{:,.0f}".format(p['price']).replace(",", " ") }} {{ _("so‘m") }}</strong></td>
-            <td>{{ p['category_name'] }}</td>
+            <td><strong>{{ p['name'] }}</strong></td>
+            <td>{{ "{:,.0f}".format(p['price']).replace(",", " ") }} {{ _("so‘m") }}</td>
+            <td>
+              <span class="badge {% if p['stock'] > 10 %}bg-success{% elif p['stock'] > 0 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                {{ p['stock'] }} {{ _("dona") }}
+              </span>
+            </td>
+            <td><span class="badge bg-secondary">{{ p['category_name'] }}</span></td>
             <td class="text-end">
               <a href="{{ url_for('admin_edit_product', product_id=p['id']) }}"
                  class="btn btn-sm btn-outline-warning">✏️ {{ _("Tahrirlash") }}</a>
