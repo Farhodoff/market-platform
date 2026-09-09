@@ -22,10 +22,11 @@
 
         .status {
             display: inline-block; padding: 5px 10px; border-radius: 6px;
-            color: white; font-size: 12px; margin-top: 8px;
+            color: white; font-size: 12px; margin-top: 8px; font-weight: 500;
         }
         .status.kutilmoqda { background: #f59e0b; }
         .status.tasdiqlandi { background: #3b82f6; }
+        .status.yetkazilmoqda { background: #06b6d4; color: #fff; }
         .status.bajarildi { background: #16a34a; }
         .status.bekor_qilindi { background: #ef4444; }
 
@@ -71,9 +72,10 @@
                 <span class="status
                     {% if o['status'] == 'Kutilmoqda' %}kutilmoqda
                     {% elif o['status'] == 'Tasdiqlandi' %}tasdiqlandi
+                    {% elif o['status'] == 'Yetkazilmoqda' %}yetkazilmoqda
                     {% elif o['status'] == 'Bajarildi' %}bajarildi
                     {% elif o['status'] == 'Bekor qilindi' %}bekor_qilindi{% endif %}">
-                    {{ _(o['status']) }}
+                    {% if o['status'] == 'Yetkazilmoqda' %}🚗 {{ _("Yetkazilmoqda") }}{% else %}{{ _(o['status']) }}{% endif %}
                 </span>
             </div>
         </div>

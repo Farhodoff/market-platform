@@ -667,8 +667,13 @@ def admin_update_order(order_id, new_status):
         "uz": {
             "approved": (
                 f"✅ Hurmatli {order['name']}, #{order['id']} raqamli buyurtmangiz tasdiqlandi!\n\n"
-                f"🚚 Tez orada yetkazib beriladi.\n"
-                f"📦 Jami summa: {int(order['total_price']):,} so‘m".replace(",", " ")
+                f"📦 Buyurtmangiz tayyorlanmoqda.\n"
+                f"💰 Jami summa: {int(order['total_price']):,} so‘m".replace(",", " ")
+            ),
+            "delivering": (
+                f"🚗 Hurmatli {order['name']}, #{order['id']} raqamli buyurtmangiz kuryer orqali yetkazilmoqda!\n\n"
+                f"📍 Manzilingiz: {order['address']}\n"
+                f"Tez orada kuryer siz bilan bog‘lanadi."
             ),
             "delivered": (
                 f"🚚 Hurmatli {order['name']}, #{order['id']} raqamli buyurtmangiz muvaffaqiyatli yetkazib berildi!\n\n"
@@ -682,8 +687,13 @@ def admin_update_order(order_id, new_status):
         "ru": {
             "approved": (
                 f"✅ Уважаемый {order['name']}, ваш заказ #{order['id']} подтвержден!\n\n"
-                f"🚚 Скоро будет доставлен.\n"
-                f"📦 Общая сумма: {int(order['total_price']):,} сум".replace(",", " ")
+                f"📦 Ваш заказ готовится.\n"
+                f"💰 Общая сумма: {int(order['total_price']):,} сум".replace(",", " ")
+            ),
+            "delivering": (
+                f"🚗 Уважаемый {order['name']}, ваш заказ #{order['id']} передан курьеру и доставляется!\n\n"
+                f"📍 Адрес доставки: {order['address']}\n"
+                f"Курьер скоро свяжется с вами."
             ),
             "delivered": (
                 f"🚚 Уважаемый {order['name']}, ваш заказ #{order['id']} успешно доставлен!\n\n"
@@ -700,6 +710,8 @@ def admin_update_order(order_id, new_status):
     lang_msgs = MESSAGES.get(lang, MESSAGES["uz"])
     if new_status == "Tasdiqlandi":
         message = lang_msgs["approved"]
+    elif new_status == "Yetkazilmoqda":
+        message = lang_msgs["delivering"]
     elif new_status == "Bajarildi":
         message = lang_msgs["delivered"]
     elif new_status == "Bekor qilindi":

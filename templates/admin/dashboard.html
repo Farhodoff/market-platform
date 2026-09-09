@@ -85,6 +85,8 @@
                       <span class="badge bg-warning text-dark">{{ _("Kutilmoqda") }}</span>
                     {% elif o['status'] == 'Tasdiqlandi' %}
                       <span class="badge bg-primary">{{ _("Tasdiqlandi") }}</span>
+                    {% elif o['status'] == 'Yetkazilmoqda' %}
+                      <span class="badge bg-info text-dark">🚗 {{ _("Yetkazilmoqda") }}</span>
                     {% elif o['status'] == 'Bajarildi' %}
                       <span class="badge bg-success">{{ _("Bajarildi") }}</span>
                     {% elif o['status'] == 'Bekor qilindi' %}
@@ -96,7 +98,14 @@
                   <td class="text-end">
                     {% if o['status'] == 'Kutilmoqda' %}
                       <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Tasdiqlandi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-primary" title="Tasdiqlash">✅</a>
-                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Rostdan ham bekor qilmoqchimisiz?')" title="Bekor qilish">❌</a>
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-danger" data-confirm="Rostdan ham bekor qilmoqchimisiz?" onclick="return confirm(this.getAttribute('data-confirm'))" title="Bekor qilish">❌</a>
+                    {% elif o['status'] == 'Tasdiqlandi' %}
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Yetkazilmoqda', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-info" title="Yo‘lga chiqarish">🚗</a>
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bajarildi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-success" title="Yetkazildi">✔️</a>
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-danger" data-confirm="Rostdan ham bekor qilmoqchimisiz?" onclick="return confirm(this.getAttribute('data-confirm'))" title="Bekor qilish">❌</a>
+                    {% elif o['status'] == 'Yetkazilmoqda' %}
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bajarildi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-success" title="Yetkazildi">✔️</a>
+                      <a href="{{ url_for('admin_update_order', order_id=o['id'], new_status='Bekor qilindi', next=url_for('admin_dashboard')) }}" class="btn btn-sm btn-outline-danger" data-confirm="Rostdan ham bekor qilmoqchimisiz?" onclick="return confirm(this.getAttribute('data-confirm'))" title="Bekor qilish">❌</a>
                     {% else %}
                       <span class="text-muted">—</span>
                     {% endif %}
