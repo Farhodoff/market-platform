@@ -3,96 +3,671 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ _("Admin Panel") }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>{% block title %}{{ _("Boshqaruv Paneli") }}{% endblock %} — Market Platform Admin</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <style>
-      body {
-          background: #f5f6fa;
-          font-family: 'Segoe UI', sans-serif;
+    :root {
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --admin-sidebar-width: 260px;
+      --admin-primary: #4361ee;
+      --admin-primary-hover: #3a56d4;
+      --admin-primary-soft: rgba(67, 97, 238, 0.1);
+      --admin-sidebar-bg: #ffffff;
+      --admin-body-bg: #f8fafc;
+      --admin-card-bg: #ffffff;
+      --admin-text-main: #1e293b;
+      --admin-text-muted: #64748b;
+      --admin-border-color: #e2e8f0;
+      --admin-shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+      --admin-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --admin-shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+      --admin-radius: 14px;
+      --admin-radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--admin-body-bg);
+      color: var(--admin-text-main);
+      font-family: var(--font-main);
+      font-size: 0.925rem;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Layout Wrapper */
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar */
+    .admin-sidebar {
+      width: var(--admin-sidebar-width);
+      background: var(--admin-sidebar-bg);
+      border-right: 1px solid var(--admin-border-color);
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1040;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1.25rem;
+      border-bottom: 1px solid var(--admin-border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--admin-text-main);
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.35);
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      color: var(--admin-text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      padding: 1.25rem 0.85rem;
+      overflow-y: auto;
+    }
+
+    .nav-section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      padding: 0.75rem 0.75rem 0.35rem;
+      margin-top: 0.5rem;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-link-custom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.7rem 0.95rem;
+      color: #475569;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: var(--admin-radius-sm);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-link-custom i {
+      font-size: 1.15rem;
+      color: #64748b;
+      transition: all 0.2s ease;
+      width: 22px;
+      text-align: center;
+    }
+
+    .nav-link-custom:hover {
+      background: #f1f5f9;
+      color: var(--admin-primary);
+    }
+
+    .nav-link-custom:hover i {
+      color: var(--admin-primary);
+      transform: translateX(2px);
+    }
+
+    .nav-link-custom.active {
+      background: var(--admin-primary);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(67, 97, 238, 0.28);
+    }
+
+    .nav-link-custom.active i {
+      color: #ffffff;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* Pulse animation for pending orders */
+    .pulse-badge {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--admin-border-color);
+      background: #fafbfc;
+    }
+
+    .admin-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--admin-radius-sm);
+      background: #ffffff;
+      border: 1px solid var(--admin-border-color);
+    }
+
+    .admin-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .admin-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admin-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .admin-role {
+      font-size: 0.72rem;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .online-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      display: inline-block;
+    }
+
+    /* Main Content Area */
+    .admin-main {
+      flex: 1;
+      margin-left: var(--admin-sidebar-width);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 100vh;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Topbar */
+    .admin-topbar {
+      height: 70px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--admin-border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.75rem;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      backdrop-filter: blur(8px);
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .sidebar-toggle-btn {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--admin-border-color);
+      border-radius: 8px;
+      width: 38px;
+      height: 38px;
+      align-items: center;
+      justify-content: center;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .page-heading-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--admin-text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-action-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--admin-radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      background: #f8fafc;
+      border: 1px solid var(--admin-border-color);
+      text-decoration: none;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .btn-action-icon:hover {
+      background: #f1f5f9;
+      color: var(--admin-primary);
+    }
+
+    .badge-counter {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      padding: 0.2em 0.5em;
+      border-radius: 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    /* Page Content */
+    .admin-content-body {
+      padding: 1.75rem;
+      flex: 1;
+    }
+
+    /* Cards general styling */
+    .card {
+      border-radius: var(--admin-radius);
+      border: 1px solid var(--admin-border-color);
+      box-shadow: var(--admin-shadow-sm);
+      background-color: var(--admin-card-bg);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-header {
+      background-color: transparent;
+      border-bottom: 1px solid var(--admin-border-color);
+      padding: 1.25rem 1.5rem;
+      font-weight: 700;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Mobile Backdrop */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1035;
+    }
+
+    /* Responsive */
+    @media (max-width: 991.98px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
       }
-      .sidebar {
-          width: 250px;
-          background: #fff;
-          height: 100vh;
-          position: fixed;
-          left: 0;
-          top: 0;
-          padding: 20px;
-          box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+
+      .admin-sidebar.show {
+        transform: translateX(0);
       }
-      .sidebar h2 {
-          font-size: 20px;
-          font-weight: 700;
-          margin-bottom: 30px;
+
+      .sidebar-backdrop.show {
+        display: block;
       }
-      .sidebar a {
-          display: block;
-          padding: 12px 15px;
-          margin-bottom: 10px;
-          border-radius: 8px;
-          text-decoration: none;
-          color: #333;
-          transition: all 0.2s;
+
+      .admin-main {
+        margin-left: 0;
       }
-      .sidebar a:hover, .sidebar a.active {
-          background: #007bff;
-          color: #fff;
+
+      .sidebar-toggle-btn {
+        display: flex;
       }
-      .logout {
-          background: #fee2e2;
-          color: #dc2626;
-          margin-top: 50px;
+
+      .admin-topbar {
+        padding: 0 1rem;
       }
-      .main {
-          margin-left: 270px;
-          padding: 30px;
+
+      .admin-content-body {
+        padding: 1rem;
       }
-      .topbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-      }
-      .content {
-          background: #fff;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      }
+    }
   </style>
+
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<div class="admin-wrapper d-flex">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>⚙️ {{ _("Admin Panel") }}</h2>
-        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">📊 {{ _("Dashboard") }}</a>
-        <a href="{{ url_for('admin_products') }}" class="{% if request.endpoint == 'admin_products' %}active{% endif %}">📦 {{ _("Mahsulotlar") }}</a>
-        <a href="{{ url_for('admin_categories') }}" class="{% if request.endpoint == 'admin_categories' %}active{% endif %}">🗂 {{ _("Kategoriyalar") }}</a>
-        <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint == 'admin_orders' %}active{% endif %}">🛒 {{ _("Buyurtmalar") }}</a>
-        <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint == 'admin_users' %}active{% endif %}">👥 {{ _("Foydalanuvchilar") }}</a>
-        <a href="{{ url_for('admin_logout') }}" class="logout">🚪 {{ _("Chiqish") }}</a>
+<div class="admin-layout">
+  <!-- Mobile Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <!-- Brand Header -->
+    <div class="sidebar-header">
+      <a href="{{ url_for('admin_dashboard') }}" class="brand-logo">
+        <div class="brand-icon">
+          <i class="bi bi-shop"></i>
+        </div>
+        <div>
+          <div class="brand-title">Market<span class="text-primary">Pro</span></div>
+          <div class="brand-subtitle">{{ _("Boshqaruv Paneli") }}</div>
+        </div>
+      </a>
+      <button class="btn-close d-lg-none" id="sidebarCloseBtn" aria-label="Close"></button>
     </div>
 
-    <!-- Main content -->
-    <div class="main flex-fill">
-        <div class="topbar">
-            <h1>{% block title %}{% endblock %}</h1>
-            <div class="d-flex align-items-center">
-                <span>{{ _("Admin") }}</span>
+    <!-- Navigation Menu -->
+    <div class="sidebar-content">
+      <div class="nav-section-title">{{ _("Umumiy") }}</div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('admin_dashboard') }}" class="nav-link-custom {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>{{ _("Dashboard") }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-title">{{ _("Savdo va Mahsulotlar") }}</div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('admin_products') }}" class="nav-link-custom {% if request.endpoint in ['admin_products', 'admin_edit_product'] %}active{% endif %}">
+            <i class="bi bi-box-seam-fill"></i>
+            <span>{{ _("Mahsulotlar") }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin_categories') }}" class="nav-link-custom {% if request.endpoint in ['admin_categories', 'admin_edit_category'] %}active{% endif %}">
+            <i class="bi bi-tags-fill"></i>
+            <span>{{ _("Kategoriyalar") }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin_orders') }}" class="nav-link-custom {% if request.endpoint == 'admin_orders' %}active{% endif %}">
+            <i class="bi bi-cart-check-fill"></i>
+            <span>{{ _("Buyurtmalar") }}</span>
+            {% if pending_orders_count and pending_orders_count > 0 %}
+              <span class="badge bg-danger nav-badge pulse-badge">{{ pending_orders_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin_users') }}" class="nav-link-custom {% if request.endpoint == 'admin_users' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>{{ _("Mijozlar") }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-title">{{ _("Havolalar va Tizim") }}</div>
+      <ul class="sidebar-nav">
+        <li class="nav-item">
+          <a href="{{ url_for('index') }}" target="_blank" class="nav-link-custom">
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>{{ _("Do‘konga o‘tish") }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin_logout') }}" class="nav-link-custom text-danger">
+            <i class="bi bi-box-arrow-right text-danger"></i>
+            <span>{{ _("Chiqish") }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Sidebar Footer: Admin Profile -->
+    <div class="sidebar-footer">
+      <div class="admin-profile-card">
+        <div class="admin-avatar">
+          AD
+        </div>
+        <div class="admin-info">
+          <p class="admin-name">Administrator</p>
+          <p class="admin-role"><span class="online-indicator"></span> {{ _("Tizimda faol") }}</p>
+        </div>
+        <a href="{{ url_for('admin_logout') }}" class="text-secondary p-1" title="{{ _('Chiqish') }}">
+          <i class="bi bi-power fs-5"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="page-heading-block">
+          <h1 class="page-title">
+            {% block page_title %}{{ self.title() }}{% endblock %}
+          </h1>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Do'kon tezkor havolasi -->
+        <a href="{{ url_for('index') }}" target="_blank" class="btn btn-sm btn-outline-primary d-none d-md-flex align-items-center gap-2 rounded-pill px-3">
+          <i class="bi bi-shop"></i>
+          <span>{{ _("Do‘konni ochish") }}</span>
+        </a>
+
+        <!-- Bildirishnoma (Kutilayotgan buyurtmalar) -->
+        <a href="{{ url_for('admin_orders') }}" class="btn-action-icon" title="{{ _('Kutilayotgan buyurtmalar') }}">
+          <i class="bi bi-bell-fill"></i>
+          {% if pending_orders_count and pending_orders_count > 0 %}
+            <span class="badge bg-danger badge-counter pulse-badge">{{ pending_orders_count }}</span>
+          {% endif %}
+        </a>
+
+        <!-- Til tanlash dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light border dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-globe me-1"></i>
+            <span class="text-uppercase fw-semibold">{{ current_lang or 'uz' }}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2 {% if current_lang == 'uz' %}active{% endif %}" href="{{ url_for('set_language_session', lang='uz') }}">
+                <span>🇺🇿</span> O‘zbekcha
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2 {% if current_lang == 'ru' %}active{% endif %}" href="{{ url_for('set_language_session', lang='ru') }}">
+                <span>🇷🇺</span> Русский
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Foydalanuvchi dropdown -->
+        <div class="dropdown">
+          <button class="btn p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="admin-avatar" style="width: 38px; height: 38px; font-size: 0.9rem;">
+              <i class="bi bi-person-fill"></i>
             </div>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+            <li class="px-3 py-2 border-bottom">
+              <div class="fw-bold">Administrator</div>
+              <small class="text-muted">admin@market.uz</small>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" href="{{ url_for('admin_dashboard') }}">
+                <i class="bi bi-speedometer2 me-2 text-primary"></i> {{ _("Dashboard") }}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item py-2" href="{{ url_for('admin_orders') }}">
+                <i class="bi bi-cart3 me-2 text-warning"></i> {{ _("Buyurtmalar") }}
+              </a>
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+              <a class="dropdown-item py-2 text-danger" href="{{ url_for('admin_logout') }}">
+                <i class="bi bi-box-arrow-right me-2"></i> {{ _("Chiqish") }}
+              </a>
+            </li>
+          </ul>
         </div>
+      </div>
+    </header>
 
-        <div class="content">
-            {% block content %}{% endblock %}
-        </div>
-    </div>
+    <!-- Content Body -->
+    <main class="admin-content-body">
+      <!-- Flash xabarlar -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+              <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Mobile Sidebar Script -->
+<script>
+  const sidebar = document.getElementById('adminSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const toggleBtn = document.getElementById('sidebarToggleBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar() {
+    sidebar.classList.add('show');
+    backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('show');
+    backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (backdrop) backdrop.addEventListener('click', closeSidebar);
+</script>
+
+{% block extra_js %}{% endblock %}
+
 </body>
 </html>

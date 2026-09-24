@@ -119,10 +119,19 @@ def set_global_locale():
     # templatelarda {{ g.locale }} deb foydalaning (funksiya emas, string!)
     g.locale = select_locale()
 
-# (ixtiyoriy) templatelarga joriy til nomini qulay uzatish
+# Shablonlarga joriy til va kutilayotgan buyurtmalar sonini uzatish
 @app.context_processor
-def inject_current_lang():
-    return {"current_lang": getattr(g, "locale", "uz")}
+def inject_global_data():
+    data = {"current_lang": getattr(g, "locale", "uz")}
+    if session.get("admin_logged_in"):
+        try:
+            conn = get_db_connection()
+            pending_cnt = conn.execute("SELECT COUNT(*) as count FROM orders WHERE status = 'Kutilmoqda'").fetchone()["count"]
+            conn.close()
+            data["pending_orders_count"] = pending_cnt
+        except Exception:
+            data["pending_orders_count"] = 0
+    return data
 
 # =====================
 # 🌍 Tilni o‘zgartirish
@@ -679,7 +688,9 @@ def admin_dashboard():
 
     # 1. Bugungi sana (Toshkent vaqti)
     tz = pytz.timezone("Asia/Tashkent")
-    today_str = datetime.now(tz).strftime("%Y-%m-%d")
+    now_tashkent = datetime.now(tz)
+    today_str = now_tashkent.strftime("%Y-%m-%d")
+    current_date_str = now_tashkent.strftime("%d.%m.%Y, %H:%M")
 
     # Bugungi buyurtmalar va tushum
     today_stat = conn.execute("""
@@ -688,7 +699,7 @@ def admin_dashboard():
         WHERE created_at LIKE ? AND status != 'Bekor qilindi'
     """, (today_str + "%",)).fetchone()
 
-    # Jami buyurtmalar va tushum
+    # Jami buyurtmalar va tushum (bekor qilinmagan)
     all_stat = conn.execute("""
         SELECT COUNT(*) as count, COALESCE(SUM(total_price), 0) as total
         FROM orders
@@ -706,6 +717,44 @@ def admin_dashboard():
     # Jami mahsulotlar soni
     products_stat = conn.execute("SELECT COUNT(*) as count FROM products").fetchone()
 
+    # Kategoriyalar soni
+    categories_stat = conn.execute("SELECT COUNT(*) as count FROM categories").fetchone()
+
+    # Kam qolgan zaxiralar (< 10 dona)
+    low_stock_count = conn.execute("SELECT COUNT(*) as count FROM products WHERE stock < 10").fetchone()["count"]
+    low_stock_products = conn.execute("""
+        SELECT id, name, price, stock, image
+        FROM products
+        WHERE stock < 10
+        ORDER BY stock ASC
+        LIMIT 5
+    """).fetchall()
+
+    # Statuslar bo'yicha taqsimot
+    status_rows = conn.execute("""
+        SELECT status, COUNT(*) as count
+        FROM orders
+        GROUP BY status
+    """).fetchall()
+    status_map = {row["status"]: row["count"] for row in status_rows}
+    status_stats = {
+        "kutilmoqda": status_map.get("Kutilmoqda", 0),
+        "tasdiqlandi": status_map.get("Tasdiqlandi", 0),
+        "yetkazilmoqda": status_map.get("Yetkazilmoqda", 0),
+        "bajarildi": status_map.get("Bajarildi", 0),
+        "bekor_qilindi": status_map.get("Bekor qilindi", 0),
+    }
+
+    # Barcha buyurtmalar (bajarilish foizi uchun)
+    total_all_orders = sum(status_map.values())
+    completed_orders = status_map.get("Bajarildi", 0)
+    completion_rate = round((completed_orders / total_all_orders * 100), 1) if total_all_orders > 0 else 0
+
+    # O'rtacha buyurtma qiymati (AOV)
+    valid_orders_count = all_stat["count"] or 0
+    total_revenue = all_stat["total"] or 0
+    avg_order_value = int(total_revenue / valid_orders_count) if valid_orders_count > 0 else 0
+
     # Eng ko'p sotilgan mahsulotlar (Top 5)
     top_products = conn.execute("""
         SELECT product_name, SUM(quantity) as total_qty, SUM(quantity * price) as total_revenue
@@ -715,12 +764,39 @@ def admin_dashboard():
         LIMIT 5
     """).fetchall()
 
-    # Oxirgi 5 ta buyurtma
+    max_qty = max([tp["total_qty"] for tp in top_products], default=1)
+    top_products_data = []
+    for tp in top_products:
+        pct = int((tp["total_qty"] / max_qty) * 100) if max_qty > 0 else 0
+        top_products_data.append({
+            "product_name": tp["product_name"],
+            "total_qty": tp["total_qty"],
+            "total_revenue": tp["total_revenue"],
+            "pct": pct
+        })
+
+    # Kunlik sotuvlar grafigi ma'lumotlari
+    daily_sales = conn.execute("""
+        SELECT SUBSTR(created_at, 1, 10) as day,
+               COUNT(*) as count,
+               COALESCE(SUM(total_price), 0) as total
+        FROM orders
+        WHERE status != 'Bekor qilindi'
+        GROUP BY SUBSTR(created_at, 1, 10)
+        ORDER BY day ASC
+        LIMIT 10
+    """).fetchall()
+
+    chart_labels = [row["day"] for row in daily_sales]
+    chart_revenue = [float(row["total"]) for row in daily_sales]
+    chart_orders = [int(row["count"]) for row in daily_sales]
+
+    # Oxirgi 8 ta buyurtma
     recent_orders = conn.execute("""
-        SELECT id, name, phone, total_price, status, created_at
+        SELECT id, name, phone, total_price, status, created_at, receipt
         FROM orders
         ORDER BY id DESC
-        LIMIT 5
+        LIMIT 8
     """).fetchall()
 
     conn.close()
@@ -732,8 +808,18 @@ def admin_dashboard():
         pending_stat=pending_stat,
         users_count=users_stat["count"] if users_stat else 0,
         products_count=products_stat["count"] if products_stat else 0,
-        top_products=top_products,
-        recent_orders=recent_orders
+        categories_count=categories_stat["count"] if categories_stat else 0,
+        low_stock_count=low_stock_count,
+        low_stock_products=low_stock_products,
+        status_stats=status_stats,
+        completion_rate=completion_rate,
+        avg_order_value=avg_order_value,
+        top_products=top_products_data,
+        recent_orders=recent_orders,
+        current_date_str=current_date_str,
+        chart_labels=json.dumps(chart_labels),
+        chart_revenue=json.dumps(chart_revenue),
+        chart_orders=json.dumps(chart_orders)
     )
 
 # 📂 Admin: buyurtmalar

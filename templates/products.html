@@ -308,9 +308,9 @@
 <!-- Telegram WebApp JS -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-const categoryId = {{ category['id'] if category else 0 }};
-let currentLoadedPage = {{ page }};
-let totalPages = {{ total_pages }};
+const categoryId = parseInt("{{ category['id'] if category else 0 }}", 10) || 0;
+let currentLoadedPage = parseInt("{{ page }}", 10) || 1;
+let totalPages = parseInt("{{ total_pages }}", 10) || 1;
 let isLoadingMore = false;
 let searchTimeout = null;
 

@@ -298,7 +298,7 @@
             </div>
             <div class="card-number-row">
                 <span id="cardDisplayNumber">{{ card_number }}</span>
-                <button type="button" class="copy-pill-btn" onclick="copyText('{{ card_clean }}', '{{ _('Karta raqami nusxalandi!') }}')">
+                <button type="button" class="copy-pill-btn" onclick="copyCardNumber()">
                     📋 {{ _("Nusxa olish") }}
                 </button>
             </div>
@@ -373,6 +373,11 @@ function payViaPayme() {
     } else {
         window.open(paymeUrl, "_blank");
     }
+}
+
+// 📋 Karta raqamini nusxalash
+function copyCardNumber() {
+    copyText(cardClean, "{{ _('Karta raqami nusxalandi!') }}");
 }
 
 // 📋 Matn nusxalash
