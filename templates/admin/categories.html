@@ -3,18 +3,25 @@
 {% block title %}{{ _("Kategoriyalarni Boshqarish") }}{% endblock %}
 
 {% block content %}
+<div class="admin-page-header">
+    <div>
+        <div class="admin-page-kicker">{{ _("Katalog tuzilmasi") }}</div>
+        <h2 class="admin-page-heading">{{ _("Kategoriyalar") }}</h2>
+        <p class="admin-page-description">{{ _("Mahsulotlarni tartibli va ko‘p tilli katalogda saqlang.") }}</p>
+    </div>
+    <span class="badge text-bg-light border px-3 py-2"><i class="bi bi-tags me-1"></i>{{ categories|length }} {{ _("kategoriya") }}</span>
+</div>
 <div class="card shadow-sm">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">📂 {{ _("Kategoriyalar ro‘yxati") }}</h4>
+    <div class="admin-toolbar">
+        <h5 class="admin-toolbar-title"><i class="bi bi-tags"></i>{{ _("Kategoriyalar ro‘yxati") }}</h5>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
-                + {{ _("Yangi Kategoriya") }}
+                <i class="bi bi-plus-lg me-1"></i>{{ _("Yangi kategoriya") }}
             </button>
-        </div>
+    </div>
 
         <!-- 📋 Kategoriya jadvali -->
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table admin-table align-middle">
                 <thead class="table-light">
                     <tr>
                         <th scope="col">№</th>
@@ -26,21 +33,21 @@
                 <tbody>
                 {% for category in categories %}
                     <tr>
-                        <td>{{ loop.index }}</td>
+                        <td><span class="table-index">{{ "%02d"|format(loop.index) }}</span></td>
                         <td>{{ category['name_uz'] or '🚫' }}</td>
                         <td>{{ category['name_ru'] or '🚫' }}</td>
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
                             <a href="{{ url_for('admin_edit_category', category_id=category['id']) }}"
-                               class="btn btn-sm btn-outline-secondary">✏️</a>
+                               class="btn btn-sm btn-light border" title="{{ _('Tahrirlash') }}"><i class="bi bi-pencil"></i></a>
                             <a href="{{ url_for('admin_delete_category', category_id=category['id']) }}"
                                class="btn btn-sm btn-outline-danger"
                                data-confirm="{{ _('Rostdan o‘chirmoqchimisiz?') }}"
-                               onclick="return confirm(this.getAttribute('data-confirm'))">🗑</a>
+                               onclick="return confirm(this.getAttribute('data-confirm'))" title="{{ _('O‘chirish') }}"><i class="bi bi-trash3"></i></a>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted">🚫 {{ _("Hech qanday kategoriya topilmadi") }}</td>
+                        <td colspan="4" class="empty-state"><i class="bi bi-tags"></i>{{ _("Hech qanday kategoriya topilmadi") }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

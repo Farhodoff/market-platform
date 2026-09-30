@@ -12,6 +12,7 @@ from flask_babel import Babel, gettext as _
 from db import get_all_orders_with_items, get_orders_by_user
 
 load_dotenv()
+db.init_db()
 
 app = Flask(__name__)
 
@@ -1171,4 +1172,3 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5050))
     app.run(host="0.0.0.0", port=port, debug=True)
-

@@ -2,12 +2,21 @@
 {% block title %}{{ _("Foydalanuvchilar") }}{% endblock %}
 
 {% block content %}
+<div class="admin-page-header">
+  <div>
+    <div class="admin-page-kicker">{{ _("Mijozlar bazasi") }}</div>
+    <h2 class="admin-page-heading">{{ _("Foydalanuvchilar") }}</h2>
+    <p class="admin-page-description">{{ _("Ro‘yxatdan o‘tgan mijozlar va yetkazib berish ma’lumotlari.") }}</p>
+  </div>
+  <span class="badge text-bg-light border px-3 py-2"><i class="bi bi-people me-1"></i>{{ users|length }} {{ _("mijoz") }}</span>
+</div>
 <div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title mb-3">👤 {{ _("Foydalanuvchilar Ro‘yxati") }}</h5>
+  <div class="admin-toolbar">
+    <h5 class="admin-toolbar-title"><i class="bi bi-people"></i>{{ _("Foydalanuvchilar ro‘yxati") }}</h5>
+  </div>
 
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
+      <table class="table admin-table align-middle">
         <thead class="table-light">
           <tr>
             <th scope="col">№</th>
@@ -20,8 +29,8 @@
         <tbody>
         {% for user in users %}
           <tr>
-            <td>{{ loop.index }}</td>
-            <td><strong>{{ user['name'] }}</strong></td>
+            <td><span class="table-index">{{ "%02d"|format(loop.index) }}</span></td>
+            <td><strong class="text-dark">{{ user['name'] }}</strong></td>
             <td>{{ user['phone'] or '—' }}</td>
             <td>
               {% if user['lat'] and user['lon'] %}
@@ -34,16 +43,16 @@
                 {{ user['address'] or '—' }}
               {% endif %}
             </td>
-            <td class="text-end">
+            <td class="text-end text-nowrap">
               <a href="{{ url_for('admin_delete_user', user_id=user['id']) }}"
                  data-confirm="{{ _('Rostdan ham foydalanuvchini o‘chirmoqchimisiz?') }}"
                  onclick="return confirm(this.getAttribute('data-confirm'))"
-                 class="btn btn-sm btn-outline-danger">🗑 {{ _("O‘chirish") }}</a>
+                 class="btn btn-sm btn-light border text-danger" title="{{ _('O‘chirish') }}"><i class="bi bi-trash3"></i><span class="d-none d-lg-inline ms-1">{{ _("O‘chirish") }}</span></a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="5" class="text-center text-muted">🚀 {{ _("Hali foydalanuvchi mavjud emas") }}</td>
+            <td colspan="5" class="empty-state"><i class="bi bi-people"></i>{{ _("Hali foydalanuvchi mavjud emas") }}</td>
           </tr>
         {% endfor %}
         </tbody>

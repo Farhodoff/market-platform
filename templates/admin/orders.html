@@ -2,11 +2,22 @@
 {% block title %}{{ _("Buyurtmalarni Boshqarish") }}{% endblock %}
 
 {% block content %}
+<div class="admin-page-header">
+  <div>
+    <div class="admin-page-kicker">{{ _("Savdo jarayoni") }}</div>
+    <h2 class="admin-page-heading">{{ _("Buyurtmalar") }}</h2>
+    <p class="admin-page-description">{{ _("Buyurtmalarni tekshiring, statusini yangilang va mijozni xabardor qiling.") }}</p>
+  </div>
+  <span class="badge text-bg-warning px-3 py-2"><i class="bi bi-clock me-1"></i>{{ pending_orders_count or 0 }} {{ _("kutilmoqda") }}</span>
+</div>
 <div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title mb-3">📋 {{ _("Buyurtmalar Ro‘yxati") }}</h5>
+  <div class="admin-toolbar">
+    <h5 class="admin-toolbar-title"><i class="bi bi-cart-check"></i>{{ _("Buyurtmalar ro‘yxati") }}</h5>
+    <span class="text-muted small">{{ orders|length }} {{ _("ta buyurtma") }}</span>
+  </div>
+  <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
+      <table class="table admin-table align-middle">
         <thead class="table-light">
           <tr>
             <th>#</th>
@@ -24,7 +35,7 @@
         <tbody>
           {% for o in orders %}
           <tr>
-            <td>#{{ loop.index }}</td>
+            <td><span class="table-index">#{{ "%02d"|format(loop.index) }}</span></td>
             <td>{{ o['name'] }}</td>
             <td>{{ o['phone'] }}</td>
             <td>
@@ -56,15 +67,15 @@
             </td>
             <td>
               {% if o['status'] == 'Kutilmoqda' %}
-                <span class="badge bg-warning text-dark">{{ _("Kutilmoqda") }}</span>
+                <span class="badge bg-warning text-dark admin-status">{{ _("Kutilmoqda") }}</span>
               {% elif o['status'] == 'Tasdiqlandi' %}
-                <span class="badge bg-primary">{{ _("Tasdiqlandi") }}</span>
+                <span class="badge bg-primary admin-status">{{ _("Tasdiqlandi") }}</span>
               {% elif o['status'] == 'Yetkazilmoqda' %}
-                <span class="badge bg-info text-dark">🚗 {{ _("Yetkazilmoqda") }}</span>
+                <span class="badge bg-info text-dark admin-status">🚗 {{ _("Yetkazilmoqda") }}</span>
               {% elif o['status'] == 'Bajarildi' %}
-                <span class="badge bg-success">{{ _("Bajarildi") }}</span>
+                <span class="badge bg-success admin-status">{{ _("Bajarildi") }}</span>
               {% elif o['status'] == 'Bekor qilindi' %}
-                <span class="badge bg-danger">{{ _("Bekor qilindi") }}</span>
+                <span class="badge bg-danger admin-status">{{ _("Bekor qilindi") }}</span>
               {% else %}
                 <span class="badge bg-secondary">{{ o['status'] }}</span>
               {% endif %}
@@ -100,7 +111,7 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="10" class="text-center text-muted">🚀 {{ _("Hali buyurtma yo‘q") }}</td>
+            <td colspan="10" class="empty-state"><i class="bi bi-cart-x"></i>{{ _("Hali buyurtma yo‘q") }}</td>
           </tr>
           {% endfor %}
         </tbody>
