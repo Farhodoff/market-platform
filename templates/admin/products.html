@@ -2,9 +2,21 @@
 {% block title %}{{ _("Mahsulotlarni Boshqarish") }}{% endblock %}
 
 {% block content %}
+<div class="admin-page-header">
+  <div>
+    <div class="admin-page-kicker">{{ _("Savdo katalogi") }}</div>
+    <h2 class="admin-page-heading">{{ _("Mahsulotlar") }}</h2>
+    <p class="admin-page-description">{{ _("Katalog, narx va ombor qoldig‘ini boshqaring.") }}</p>
+  </div>
+  <span class="badge text-bg-light border px-3 py-2"><i class="bi bi-box-seam me-1"></i>{{ products|length }} {{ _("mahsulot") }}</span>
+</div>
+
 <div class="card shadow-sm mb-4">
+  <div class="admin-toolbar">
+    <h5 class="admin-toolbar-title"><i class="bi bi-plus-lg"></i>{{ _("Yangi mahsulot qo‘shish") }}</h5>
+    <span class="text-muted small">{{ _("Majburiy maydonlarni to‘ldiring") }}</span>
+  </div>
   <div class="card-body">
-    <h5 class="card-title mb-3">➕ {{ _("Yangi Mahsulot Qo‘shish") }}</h5>
     <form action="{{ url_for('admin_add_product') }}" method="POST" enctype="multipart/form-data">
       <div class="row g-3">
         <div class="col-md-3">
@@ -38,10 +50,12 @@
 </div>
 
 <div class="card shadow-sm">
-  <div class="card-body">
-    <h5 class="card-title mb-3">📋 {{ _("Barcha Mahsulotlar") }}</h5>
+  <div class="admin-toolbar">
+    <h5 class="admin-toolbar-title"><i class="bi bi-grid-3x3-gap"></i>{{ _("Barcha mahsulotlar") }}</h5>
+  </div>
+  <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
+      <table class="table admin-table align-middle">
         <thead class="table-light">
           <tr>
             <th scope="col">№</th>
@@ -56,16 +70,15 @@
         <tbody>
         {% for p in products %}
           <tr>
-            <td>{{ loop.index }}</td>
+            <td><span class="table-index">{{ "%02d"|format(loop.index) }}</span></td>
             <td>
               {% if p['image'] %}
-                <img src="{{ p['image'] }}" alt="img" class="rounded"
-                     style="width:50px; height:50px; object-fit:cover;">
+                <img src="{{ p['image'] }}" alt="img" class="admin-thumb">
               {% else %}
                 <span class="text-muted">—</span>
               {% endif %}
             </td>
-            <td><strong>{{ p['name'] }}</strong></td>
+            <td><strong class="text-dark">{{ p['name'] }}</strong></td>
             <td>{{ "{:,.0f}".format(p['price']).replace(",", " ") }} {{ _("so‘m") }}</td>
             <td>
               <span class="badge {% if p['stock'] > 10 %}bg-success{% elif p['stock'] > 0 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
@@ -73,18 +86,18 @@
               </span>
             </td>
             <td><span class="badge bg-secondary">{{ p['category_name'] }}</span></td>
-            <td class="text-end">
+            <td class="text-end text-nowrap">
               <a href="{{ url_for('admin_edit_product', product_id=p['id']) }}"
-                 class="btn btn-sm btn-outline-warning">✏️ {{ _("Tahrirlash") }}</a>
+                 class="btn btn-sm btn-light border" title="{{ _('Tahrirlash') }}"><i class="bi bi-pencil"></i><span class="d-none d-lg-inline ms-1">{{ _("Tahrirlash") }}</span></a>
               <a href="{{ url_for('admin_delete_product', product_id=p['id']) }}"
                  data-confirm="{{ _('O‘chirishni xohlaysizmi?') }}"
                  onclick="return confirm(this.getAttribute('data-confirm'))"
-                 class="btn btn-sm btn-outline-danger">🗑 {{ _("O‘chirish") }}</a>
+                 class="btn btn-sm btn-light border text-danger" title="{{ _('O‘chirish') }}"><i class="bi bi-trash3"></i><span class="d-none d-lg-inline ms-1">{{ _("O‘chirish") }}</span></a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="7" class="text-center text-muted">🚀 {{ _("Hali mahsulot qo‘shilmagan") }}</td>
+            <td colspan="7" class="empty-state"><i class="bi bi-box-seam"></i>{{ _("Hali mahsulot qo‘shilmagan") }}</td>
           </tr>
         {% endfor %}
         </tbody>
